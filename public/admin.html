@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - LinkedIn Content Distributor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Admin Panel</h1>
+            <nav>
+                <button onclick="goHome()">Home</button>
+                <button onclick="goToDashboard()">Dashboard</button>
+                <button onclick="logout()">Logout</button>
+            </nav>
+        </header>
+
+        <div class="main-content">
+            <div class="create-post-section">
+                <h2>Create New Post</h2>
+                <form id="createPostForm">
+                    <input type="text" placeholder="Post Title" id="postTitle" required>
+                    <textarea placeholder="Post Content" id="postContent" rows="6" required></textarea>
+                    <input type="url" placeholder="Image URL (optional)" id="postImageUrl">
+                    <button type="submit">Create Post</button>
+                </form>
+            </div>
+
+            <div class="news-sync-section">
+                <h2>Amp News Sync</h2>
+                <p>Automatically import the latest news from Amp as posts.</p>
+                <div class="news-controls">
+                    <button onclick="syncNews()" id="syncNewsBtn">Sync Latest News</button>
+                    <span id="newsStatus">News posts: <span id="newsCount">Loading...</span></span>
+                </div>
+            </div>
+
+            <div class="posts-section">
+                <h2>Existing Posts</h2>
+                <div id="postsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

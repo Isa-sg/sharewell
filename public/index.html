@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Content Distributor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LinkedIn Content Distributor</h1>
+            <p>Create and share LinkedIn posts across your company</p>
+        </header>
+
+        <div class="auth-section" id="authSection">
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="showLogin()">Login</button>
+                <button class="tab-btn" onclick="showRegister()">Register</button>
+            </div>
+
+            <div class="auth-form" id="loginForm">
+                <h2>Login</h2>
+                <form id="loginFormElement">
+                    <input type="text" placeholder="Username" id="loginUsername" required>
+                    <input type="password" placeholder="Password" id="loginPassword" required>
+                    <button type="submit">Login</button>
+                </form>
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+                <a href="/auth/linkedin" class="linkedin-login-btn">
+                    <button type="button">Continue with LinkedIn</button>
+                </a>
+            </div>
+
+            <div class="auth-form hidden" id="registerForm">
+                <h2>Register</h2>
+                <form id="registerFormElement">
+                    <input type="text" placeholder="Username" id="registerUsername" required>
+                    <input type="email" placeholder="Email" id="registerEmail" required>
+                    <input type="password" placeholder="Password" id="registerPassword" required>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="main-content hidden" id="mainContent">
+            <nav>
+                <div class="nav-info">
+                    <span>Welcome, <span id="currentUser"></span></span>
+                </div>
+                <div class="nav-actions">
+                    <button onclick="goToAdmin()" id="adminBtn" class="hidden">Admin Panel</button>
+                    <button onclick="goToDashboard()">Dashboard</button>
+                    <button onclick="logout()">Logout</button>
+                </div>
+            </nav>
+
+            <div class="content">
+                <h2>Getting Started</h2>
+                <div class="cards">
+                    <div class="card">
+                        <h3>Create Posts</h3>
+                        <p>Admin users can create new LinkedIn posts for the team to share</p>
+                        <button onclick="goToAdmin()">Go to Admin Panel</button>
+                    </div>
+                    <div class="card">
+                        <h3>Browse Posts</h3>
+                        <p>Team members can browse and select posts to share on their LinkedIn profiles</p>
+                        <button onclick="goToDashboard()">Go to Dashboard</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

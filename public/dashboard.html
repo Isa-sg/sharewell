@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LinkedIn Content Distributor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Team Dashboard</h1>
+            <nav>
+                <button onclick="goHome()">Home</button>
+                <button onclick="goToAdmin()" id="adminBtn" class="hidden">Admin Panel</button>
+                <button onclick="logout()">Logout</button>
+            </nav>
+        </header>
+
+        <div class="main-content">
+            <div class="quick-post-section">
+                <h2>✏️ Quick Post</h2>
+                <p>Create a custom post right here</p>
+                <form id="quickPostForm">
+                    <input type="text" placeholder="Post title..." id="quickTitle" required>
+                    <textarea placeholder="Write your LinkedIn post here..." id="quickContent" rows="4" required></textarea>
+                    <button type="submit">Create & Share</button>
+                </form>
+            </div>
+            
+            <div class="dashboard-section">
+                <h2>📰 Available Posts</h2>
+                <p>Click on any post to copy it and share on LinkedIn</p>
+                <div id="dashboardPosts"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="postModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="post-type-indicator" id="postTypeIndicator">📰 Original Post</div>
+            <h3 id="modalTitle"></h3>
+            <div id="modalContent"></div>
+            <div id="modalImage"></div>
+            
+            <!-- AI Personalization Section -->
+            <div class="personalization-section" id="personalizationSection">
+                <button onclick="personalizePost()" id="personalizeBtn" class="personalize-btn">
+                    ✨ Personalize Your Post
+                </button>
+                <div class="personalization-form hidden" id="personalizationForm">
+                    <label for="templateSelect">Choose a personalization style:</label>
+                    <select id="templateSelect">
+                        <option value="">Select a template...</option>
+                    </select>
+                    <div class="personalization-buttons">
+                        <button onclick="generatePersonalization()" id="generateBtn">Apply Template</button>
+                        <button onclick="cancelPersonalization()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personalized Content Area -->
+            <div class="personalized-content hidden" id="personalizedContent">
+                <h4>✨ Your Personalized Version:</h4>
+                <div class="editable-content">
+                    <textarea id="personalizedText" rows="8"></textarea>
+                    <div class="editing-controls">
+                        <button onclick="refinePost()" class="refine-btn">✏️ Ask AI to Refine</button>
+                        <button onclick="usePersonalized()" class="use-btn">Use This Version</button>
+                        <button onclick="backToOriginal()" class="back-btn">Back to Original</button>
+                        <button onclick="tryDifferentTemplate()" class="template-btn">🔄 Try Different Template</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button onclick="copyToClipboard()">Copy Post Content</button>
+                <button onclick="markAsUsed()">Mark as Used</button>
+                <button onclick="markAsPosted()" id="markPostedBtn" class="mark-posted-btn">Mark as Posted</button>
+                <button onclick="postToLinkedIn()" id="linkedinPostBtn" class="linkedin-post-btn">Post to LinkedIn</button>
+                <a href="#" id="linkedinLink" target="_blank">
+                    <button>Open LinkedIn</button>
+                </a>
+            </div>
+            
+            <div class="linkedin-status" id="linkedinStatus">
+                <p id="linkedinStatusText">Checking LinkedIn connection...</p>
+                <button onclick="connectLinkedIn()" id="connectLinkedInBtn" class="hidden">Connect LinkedIn</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
