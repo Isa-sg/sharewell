@@ -1,5 +1,7 @@
 # LinkedIn Content Distributor
 
+> 🔒 **Security Notice**: This project uses sensitive API keys. Please read [SECURITY.md](SECURITY.md) before setting up.
+
 A web application that allows companies to create LinkedIn posts and share them across team members' profiles.
 
 ## Features
