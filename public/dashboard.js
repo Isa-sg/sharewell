@@ -511,3 +511,214 @@ function showMessage(message, type) {
         messageDiv.remove();
     }, 3000);
 }
+
+// AI Post Generation Functions
+async function generateAIPost(content, style = 'professional') {
+    const generateBtn = document.getElementById('aiGenerateBtn');
+    if (generateBtn) {
+        generateBtn.textContent = 'Generating...';
+        generateBtn.disabled = true;
+    }
+    
+    try {
+        const response = await fetch('/api/posts/generate-ai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: content,
+                style: style
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAIGeneratedContent(data.generatedContent, style);
+            showMessage('AI post generated successfully!', 'success');
+        } else {
+            showMessage(data.error || 'Failed to generate AI post', 'error');
+        }
+    } catch (error) {
+        showMessage('Network error. Please try again.', 'error');
+    } finally {
+        if (generateBtn) {
+            generateBtn.textContent = '🤖 Generate AI Version';
+            generateBtn.disabled = false;
+        }
+    }
+}
+
+function showAIForm() {
+    if (!currentPost) return;
+    
+    const aiForm = document.getElementById('aiForm');
+    if (aiForm) {
+        aiForm.classList.remove('hidden');
+    }
+}
+
+function hideAIForm() {
+    const aiForm = document.getElementById('aiForm');
+    if (aiForm) {
+        aiForm.classList.add('hidden');
+    }
+}
+
+function showAIGeneratedContent(content, style) {
+    const aiContent = document.getElementById('aiGeneratedContent');
+    const aiContentText = document.getElementById('aiContentText');
+    const aiStyleUsed = document.getElementById('aiStyleUsed');
+    
+    if (aiContentText) aiContentText.textContent = content;
+    if (aiStyleUsed) aiStyleUsed.textContent = style;
+    if (aiContent) aiContent.classList.remove('hidden');
+    
+    // Update modal indicator
+    document.getElementById('postTypeIndicator').textContent = '🤖 AI Generated Post';
+    
+    // Store AI version for copying
+    window.aiGeneratedVersion = content;
+}
+
+function useAIVersion() {
+    if (window.aiGeneratedVersion) {
+        // Replace the current post content display with AI version
+        modalContent.innerHTML = `
+            <p>${window.aiGeneratedVersion}</p>
+            ${currentPost.source_url ? `<p class="source-link"><a href="${currentPost.source_url}" target="_blank">📰 Read original article</a></p>` : ''}
+        `;
+        
+        hideAIForm();
+        document.getElementById('aiGeneratedContent').classList.add('hidden');
+        showMessage('Now showing AI version', 'success');
+    }
+}
+
+function copyAIContent() {
+    if (window.aiGeneratedVersion) {
+        navigator.clipboard.writeText(window.aiGeneratedVersion).then(() => {
+            showMessage('AI content copied to clipboard!', 'success');
+        }).catch(err => {
+            showMessage('Failed to copy to clipboard', 'error');
+        });
+    }
+}
+
+// Custom AI Modification Functions
+function showCustomAIForm() {
+    if (!currentPost) return;
+    
+    const customForm = document.getElementById('customAIForm');
+    if (customForm) {
+        customForm.classList.remove('hidden');
+    }
+}
+
+function hideCustomAIForm() {
+    const customForm = document.getElementById('customAIForm');
+    if (customForm) {
+        customForm.classList.add('hidden');
+    }
+    // Clear the input
+    const instructionInput = document.getElementById('aiInstruction');
+    if (instructionInput) {
+        instructionInput.value = '';
+    }
+}
+
+async function modifyWithCustomAI() {
+    const instruction = document.getElementById('aiInstruction').value.trim();
+    if (!instruction) {
+        showMessage('Please enter an instruction for how to modify the post', 'error');
+        return;
+    }
+
+    const currentContent = isShowingPersonalized ? personalizedVersion : 
+                          window.aiGeneratedVersion ? window.aiGeneratedVersion : 
+                          currentPost.content;
+
+    const modifyBtn = document.getElementById('customAIBtn');
+    const originalText = modifyBtn.textContent;
+    
+    modifyBtn.textContent = 'Modifying...';
+    modifyBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/posts/${currentPost.id}/modify-ai`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                instruction: instruction,
+                currentContent: currentContent
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showCustomAIResult(data.modifiedContent, instruction);
+            showMessage('Post modified successfully!', 'success');
+        } else {
+            showMessage(data.error || 'Failed to modify post', 'error');
+        }
+    } catch (error) {
+        showMessage('Network error. Please try again.', 'error');
+    } finally {
+        modifyBtn.textContent = originalText;
+        modifyBtn.disabled = false;
+    }
+}
+
+function showCustomAIResult(content, instruction) {
+    const resultDiv = document.getElementById('customAIResult');
+    const resultText = document.getElementById('customAIResultText');
+    const resultInstruction = document.getElementById('customAIResultInstruction');
+    
+    if (resultText) resultText.textContent = content;
+    if (resultInstruction) resultInstruction.textContent = instruction;
+    if (resultDiv) resultDiv.classList.remove('hidden');
+    
+    // Update modal indicator
+    document.getElementById('postTypeIndicator').textContent = '🎯 Custom AI Modified';
+    
+    // Store custom AI version
+    window.customAIVersion = content;
+    
+    // Hide the form
+    hideCustomAIForm();
+}
+
+function useCustomAIVersion() {
+    if (window.customAIVersion) {
+        // Replace the current post content display with custom AI version
+        modalContent.innerHTML = `
+            <p>${window.customAIVersion}</p>
+            ${currentPost.source_url ? `<p class="source-link"><a href="${currentPost.source_url}" target="_blank">📰 Read original article</a></p>` : ''}
+        `;
+        
+        document.getElementById('customAIResult').classList.add('hidden');
+        showMessage('Now showing custom AI version', 'success');
+    }
+}
+
+function copyCustomAIContent() {
+    if (window.customAIVersion) {
+        navigator.clipboard.writeText(window.customAIVersion).then(() => {
+            showMessage('Custom AI content copied to clipboard!', 'success');
+        }).catch(err => {
+            showMessage('Failed to copy to clipboard', 'error');
+        });
+    }
+}
+
+// Quick suggestions for AI modifications
+function fillAIInstruction(suggestion) {
+    const instructionInput = document.getElementById('aiInstruction');
+    if (instructionInput) {
+        instructionInput.value = suggestion;
+    }
+}

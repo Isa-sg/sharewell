@@ -11,6 +11,9 @@ const cheerio = require('cheerio');
 const cron = require('node-cron');
 require('dotenv').config();
 
+// Claude API integration
+const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -77,7 +80,7 @@ db.serialize(() => {
   )`);
 });
 
-// News scraping function
+// News scraping function  
 async function fetchAmpNews() {
   try {
     console.log('Fetching Amp news...');
@@ -97,17 +100,18 @@ async function fetchAmpNews() {
       newsItems = $('.news-item, .post, article');
     }
     
-    newsItems.each((index, element) => {
+    for (let index = 0; index < Math.min(newsItems.length, 8); index++) {
+      const element = newsItems[index];
       const $element = $(element);
       const text = $element.text().trim();
       
-      if (text.length > 50 && index < 8) { // Limit to first 8 items
-        const processedPost = createLinkedInPost(text);
+      if (text.length > 50) { // Process items with sufficient content
+        const processedPost = await generateAIPost(text);
         if (processedPost) {
           articles.push(processedPost);
         }
       }
-    });
+    }
     
     console.log(`Found ${articles.length} news articles`);
     return articles;
@@ -137,6 +141,57 @@ Source: https://ampcode.com/news`,
 let usedPhrases = new Set();
 let usedTitles = new Set();
 let postCounter = 0;
+
+// AI-powered post generation using Claude
+async function generateAIPost(rawText) {
+  if (!CLAUDE_API_KEY) {
+    console.log('Claude API key not found, using fallback generation');
+    return createLinkedInPost(rawText);
+  }
+
+  try {
+    const response = await axios.post('https://api.anthropic.com/v1/messages', {
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 400,
+      messages: [{
+        role: 'user',
+        content: `You are a LinkedIn content expert. Transform this tech news into an engaging, high-quality LinkedIn post that will get engagement.
+
+Requirements:
+- Make it conversational and engaging (ask questions, use "you")
+- Include 2-3 relevant emojis strategically placed
+- Add 2-3 relevant hashtags
+- Remove any dates completely
+- End with "Source: https://ampcode.com/news"
+- Keep it professional but approachable
+- Focus on the value/impact to readers
+- Use line breaks for readability
+- Make people want to comment or share
+
+Tech News: ${rawText.substring(0, 600)}`
+      }]
+    }, {
+      headers: {
+        'Authorization': `Bearer ${CLAUDE_API_KEY}`,
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01'
+      }
+    });
+
+    const aiContent = response.data.content[0].text;
+    postCounter++;
+    
+    return {
+      title: generateUniqueTitle(postCounter),
+      content: aiContent,
+      source: 'Amp News (AI Enhanced)'
+    };
+    
+  } catch (error) {
+    console.error('AI generation failed, using fallback:', error.message);
+    return createLinkedInPost(rawText);
+  }
+}
 
 // Function to create LinkedIn-optimized posts with guaranteed uniqueness
 function createLinkedInPost(rawText) {
@@ -924,6 +979,139 @@ app.get('/api/personalization/templates', (req, res) => {
     name: personalizationTemplates[key].name
   }));
   res.json({ templates });
+});
+
+// API endpoint for AI-powered post generation
+app.post('/api/posts/generate-ai', async (req, res) => {
+  const { content, style = 'professional' } = req.body;
+  
+  if (!content) {
+    return res.status(400).json({ error: 'Content is required' });
+  }
+
+  if (!CLAUDE_API_KEY) {
+    return res.status(500).json({ error: 'AI service not configured' });
+  }
+
+  try {
+    const stylePrompts = {
+      professional: {
+        tone: 'professional and authoritative',
+        instructions: 'Write like a thought leader. Use industry terminology. Include insights and implications. Add strategic hashtags like #Leadership #Innovation #Strategy.'
+      },
+      casual: {
+        tone: 'casual and conversational',
+        instructions: 'Write like you\'re talking to a friend. Use "you" and "we". Ask engaging questions. Include fun emojis. Add hashtags like #TeamWork #Culture #TechLife.'
+      },
+      excited: {
+        tone: 'enthusiastic and energetic',
+        instructions: 'Use lots of energy! Add excitement with words like "amazing", "incredible", "game-changing". Use 🚀🎉🔥 emojis. Add hashtags like #Exciting #GameChanger #Innovation.'
+      },
+      technical: {
+        tone: 'technical and detailed',
+        instructions: 'Include technical details and specifications. Explain the "how" and "why". Use precise language. Add hashtags like #TechDeep #Development #Engineering.'
+      }
+    };
+
+    const selectedStyle = stylePrompts[style] || stylePrompts.professional;
+
+    const response = await axios.post('https://api.anthropic.com/v1/messages', {
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: `You are a LinkedIn content expert. Create an engaging LinkedIn post that will get likes, comments, and shares.
+
+Style: ${selectedStyle.tone}
+Instructions: ${selectedStyle.instructions}
+
+Requirements:
+- Remove any dates completely
+- End with "Source: https://ampcode.com/news"
+- Use line breaks for readability
+- Make it engaging and valuable to readers
+- Include a call-to-action or question to encourage engagement
+
+Content: ${content}`
+      }]
+    }, {
+      headers: {
+        'Authorization': `Bearer ${CLAUDE_API_KEY}`,
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01'
+      }
+    });
+
+    const aiContent = response.data.content[0].text;
+    
+    res.json({ 
+      generatedContent: aiContent,
+      style: style,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('AI post generation error:', error.message);
+    res.status(500).json({ error: 'Failed to generate AI post: ' + error.message });
+  }
+});
+
+// API endpoint for custom AI post modifications
+app.post('/api/posts/:id/modify-ai', async (req, res) => {
+  const postId = req.params.id;
+  const { instruction, currentContent } = req.body;
+  
+  if (!instruction) {
+    return res.status(400).json({ error: 'Modification instruction is required' });
+  }
+
+  if (!CLAUDE_API_KEY) {
+    return res.status(500).json({ error: 'AI service not configured' });
+  }
+
+  try {
+    const response = await axios.post('https://api.anthropic.com/v1/messages', {
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: `You are a LinkedIn content expert. I have a LinkedIn post that I want you to modify based on my specific instruction.
+
+Current Post:
+${currentContent}
+
+Modification Request: ${instruction}
+
+Requirements:
+- Apply the requested modification thoughtfully
+- Keep it professional and engaging for LinkedIn
+- Maintain the "Source: https://ampcode.com/news" at the end
+- Use line breaks for readability
+- Keep the post engaging and valuable
+- If the instruction is unclear, make your best interpretation
+
+Please provide the modified post:`
+      }]
+    }, {
+      headers: {
+        'Authorization': `Bearer ${CLAUDE_API_KEY}`,
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01'
+      }
+    });
+
+    const modifiedContent = response.data.content[0].text;
+    
+    res.json({ 
+      modifiedContent: modifiedContent,
+      instruction: instruction,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('AI modification error:', error.message);
+    res.status(500).json({ error: 'Failed to modify post: ' + error.message });
+  }
 });
 
 // API endpoint to manually sync news

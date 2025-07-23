@@ -886,3 +886,326 @@ nav {
         flex-direction: column;
     }
 }
+
+/* AI Generation Styles */
+.ai-section {
+    margin: 20px 0;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.ai-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.ai-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.ai-form {
+    margin-top: 15px;
+    padding: 20px;
+    background: #f8f9ff;
+    border-radius: 8px;
+    border: 1px solid #e1e8ff;
+}
+
+.ai-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.ai-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.ai-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.ai-buttons button {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+#aiGenerateBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+#aiGenerateBtn:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+#aiGenerateBtn:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+}
+
+.ai-content {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f0f9ff;
+    border-radius: 8px;
+    border: 1px solid #bae6fd;
+}
+
+.ai-content h4 {
+    margin-bottom: 15px;
+    color: #0c4a6e;
+}
+
+.ai-content-display p {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e0f2fe;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.ai-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ai-controls button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.ai-controls .use-btn {
+    background: #10b981;
+    color: white;
+}
+
+.ai-controls .use-btn:hover {
+    background: #059669;
+}
+
+.ai-controls .copy-btn {
+    background: #3b82f6;
+    color: white;
+}
+
+.ai-controls .copy-btn:hover {
+    background: #2563eb;
+}
+
+.ai-controls .back-btn {
+    background: #6b7280;
+    color: white;
+}
+
+.ai-controls .back-btn:hover {
+    background: #4b5563;
+}
+
+/* Custom AI Modification Styles */
+.custom-ai-section {
+    margin: 20px 0;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.custom-ai-btn {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.custom-ai-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+}
+
+.custom-ai-form {
+    margin-top: 15px;
+    padding: 20px;
+    background: #fffbeb;
+    border-radius: 8px;
+    border: 1px solid #fed7aa;
+}
+
+.custom-ai-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #92400e;
+}
+
+.custom-ai-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #fbbf24;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.quick-suggestions {
+    margin-bottom: 15px;
+}
+
+.quick-suggestions span {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #92400e;
+    font-weight: 500;
+}
+
+.suggestion-btn {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fbbf24;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    margin: 2px 4px 2px 0;
+    transition: all 0.2s;
+}
+
+.suggestion-btn:hover {
+    background: #fbbf24;
+    color: white;
+}
+
+.custom-ai-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.custom-ai-buttons button {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+#customAIModifyBtn {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+#customAIModifyBtn:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+}
+
+#customAIModifyBtn:disabled {
+    background: #cbd5e0;
+    cursor: not-allowed;
+}
+
+.custom-ai-result {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    border: 1px solid #bbf7d0;
+}
+
+.custom-ai-result h4 {
+    margin-bottom: 15px;
+    color: #166534;
+}
+
+.custom-ai-display p {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #dcfce7;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.custom-ai-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.custom-ai-controls button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.custom-ai-controls .use-btn {
+    background: #10b981;
+    color: white;
+}
+
+.custom-ai-controls .use-btn:hover {
+    background: #059669;
+}
+
+.custom-ai-controls .copy-btn {
+    background: #3b82f6;
+    color: white;
+}
+
+.custom-ai-controls .copy-btn:hover {
+    background: #2563eb;
+}
+
+.custom-ai-controls .modify-again-btn {
+    background: #f59e0b;
+    color: white;
+}
+
+.custom-ai-controls .modify-again-btn:hover {
+    background: #d97706;
+}
+
+.custom-ai-controls .back-btn {
+    background: #6b7280;
+    color: white;
+}
+
+.custom-ai-controls .back-btn:hover {
+    background: #4b5563;
+}

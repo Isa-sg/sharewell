@@ -75,6 +75,78 @@
                 </div>
             </div>
 
+            <!-- AI Generation Section -->
+            <div class="ai-section" id="aiSection">
+                <button onclick="showAIForm()" id="aiBtn" class="ai-btn">
+                    🤖 Generate AI Version
+                </button>
+                <div class="ai-form hidden" id="aiForm">
+                    <label for="aiStyleSelect">Choose AI writing style:</label>
+                    <select id="aiStyleSelect">
+                        <option value="professional">Professional & Authoritative</option>
+                        <option value="casual">Casual & Conversational</option>
+                        <option value="excited">Enthusiastic & Energetic</option>
+                        <option value="technical">Technical & Detailed</option>
+                    </select>
+                    <div class="ai-buttons">
+                        <button onclick="generateAIPost(currentPost ? currentPost.content : '', document.getElementById('aiStyleSelect').value)" id="aiGenerateBtn">🤖 Generate AI Version</button>
+                        <button onclick="hideAIForm()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Generated Content Area -->
+            <div class="ai-content hidden" id="aiGeneratedContent">
+                <h4>🤖 AI Generated Version (Style: <span id="aiStyleUsed"></span>):</h4>
+                <div class="ai-content-display">
+                    <p id="aiContentText"></p>
+                    <div class="ai-controls">
+                        <button onclick="useAIVersion()" class="use-btn">Use AI Version</button>
+                        <button onclick="copyAIContent()" class="copy-btn">Copy AI Content</button>
+                        <button onclick="hideAIForm(); document.getElementById('aiGeneratedContent').classList.add('hidden')" class="back-btn">Back to Original</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom AI Modification Section -->
+            <div class="custom-ai-section" id="customAISection">
+                <button onclick="showCustomAIForm()" id="customAIBtn" class="custom-ai-btn">
+                    🎯 Ask AI to Modify Post
+                </button>
+                <div class="custom-ai-form hidden" id="customAIForm">
+                    <label for="aiInstruction">Tell AI how to modify the post:</label>
+                    <textarea id="aiInstruction" placeholder="e.g., Make it more exciting, Add more technical details, Make it shorter, Add a call to action..." rows="3"></textarea>
+                    
+                    <div class="quick-suggestions">
+                        <span>Quick suggestions:</span>
+                        <button type="button" onclick="fillAIInstruction('Make it more exciting and energetic')" class="suggestion-btn">More Exciting</button>
+                        <button type="button" onclick="fillAIInstruction('Make it shorter and more concise')" class="suggestion-btn">Shorter</button>
+                        <button type="button" onclick="fillAIInstruction('Add more technical details')" class="suggestion-btn">More Technical</button>
+                        <button type="button" onclick="fillAIInstruction('Make it more professional')" class="suggestion-btn">More Professional</button>
+                        <button type="button" onclick="fillAIInstruction('Add a strong call to action')" class="suggestion-btn">Add CTA</button>
+                    </div>
+                    
+                    <div class="custom-ai-buttons">
+                        <button onclick="modifyWithCustomAI()" id="customAIModifyBtn">🎯 Modify Post</button>
+                        <button onclick="hideCustomAIForm()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom AI Result Area -->
+            <div class="custom-ai-result hidden" id="customAIResult">
+                <h4>🎯 Custom AI Modified (Request: "<span id="customAIResultInstruction"></span>"):</h4>
+                <div class="custom-ai-display">
+                    <p id="customAIResultText"></p>
+                    <div class="custom-ai-controls">
+                        <button onclick="useCustomAIVersion()" class="use-btn">Use This Version</button>
+                        <button onclick="copyCustomAIContent()" class="copy-btn">Copy Content</button>
+                        <button onclick="showCustomAIForm()" class="modify-again-btn">Modify Again</button>
+                        <button onclick="document.getElementById('customAIResult').classList.add('hidden')" class="back-btn">Back</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button onclick="copyToClipboard()">Copy Post Content</button>
                 <button onclick="markAsUsed()">Mark as Used</button>
