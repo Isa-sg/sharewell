@@ -4,21 +4,38 @@
   "description": "A system for creating and distributing LinkedIn posts within a company",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server_new.js",
+    "dev": "nodemon server_new.js",
+    "start:old": "node server.js",
+    "migrate": "node -e \"const DatabaseMigrator = require('./src/config/migrations'); new DatabaseMigrator().migrate().then(() => console.log('Migrations completed')).catch(console.error)\"",
+    "backup": "node -e \"const DatabaseBackup = require('./src/utils/database-backup'); new DatabaseBackup().backup().then(path => console.log('Backup created:', path)).catch(console.error)\"",
+    "docker:build": "docker build -t sharewell .",
+    "docker:dev": "docker-compose -f docker-compose.dev.yml up --build",
+    "docker:prod": "docker-compose up --build -d",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "axios": "^1.5.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "bull": "^4.11.5",
     "cheerio": "^1.1.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
     "express-session": "^1.17.3",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.3.2",
+    "joi": "^17.11.0",
     "node-cron": "^4.2.1",
     "passport": "^0.7.0",
     "passport-linkedin-oauth2": "^2.0.0",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.6",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

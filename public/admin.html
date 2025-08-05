@@ -37,11 +37,144 @@
                 </div>
             </div>
 
+            <!-- System Health Monitoring -->
+            <div class="health-section">
+                <h2>🔧 System Health</h2>
+                <div class="health-grid">
+                    <div class="health-indicator">
+                        <div class="health-label">
+                            <span class="health-status healthy" id="dbHealth"></span>Database
+                        </div>
+                        <div class="health-value" id="dbStatus">Connected</div>
+                    </div>
+                    <div class="health-indicator">
+                        <div class="health-label">
+                            <span class="health-status healthy" id="apiHealth"></span>API
+                        </div>
+                        <div class="health-value" id="apiStatus">Healthy</div>
+                    </div>
+                    <div class="health-indicator">
+                        <div class="health-label">
+                            <span class="health-status warning" id="linkedinHealth"></span>LinkedIn
+                        </div>
+                        <div class="health-value" id="linkedinStatus">Limited</div>
+                    </div>
+                    <div class="health-indicator">
+                        <div class="health-label">
+                            <span class="health-status healthy" id="memoryHealth"></span>Memory
+                        </div>
+                        <div class="health-value" id="memoryUsage">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Analytics Dashboard -->
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="analytics-header">
+                        <div class="analytics-title">User Activity</div>
+                        <div class="analytics-change positive" id="userGrowth">+12%</div>
+                    </div>
+                    <div class="analytics-value" id="activeUsers">0</div>
+                    <div class="analytics-chart" id="userChart">User activity chart</div>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-header">
+                        <div class="analytics-title">Post Engagement</div>
+                        <div class="analytics-change positive" id="engagementGrowth">+8%</div>
+                    </div>
+                    <div class="analytics-value" id="postsShared">0</div>
+                    <div class="analytics-chart" id="engagementChart">Engagement trends</div>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-header">
+                        <div class="analytics-title">API Requests</div>
+                        <div class="analytics-change negative" id="apiGrowth">-3%</div>
+                    </div>
+                    <div class="analytics-value" id="apiRequests">0</div>
+                    <div class="analytics-chart" id="apiChart">API usage pattern</div>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-header">
+                        <div class="analytics-title">Storage Usage</div>
+                        <div class="analytics-change positive" id="storageGrowth">+15%</div>
+                    </div>
+                    <div class="analytics-value" id="storageUsed">0</div>
+                    <div class="analytics-chart" id="storageChart">Storage trends</div>
+                </div>
+            </div>
+
+            <!-- Scoring Analytics Section -->
+            <div class="scoring-analytics-section">
+                <h2>🏆 Scoring Analytics</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalPoints">0</div>
+                        <div class="stat-label">Points Awarded</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalPosts">0</div>
+                        <div class="stat-label">Posts Shared</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalAchievements">0</div>
+                        <div class="stat-label">Achievements</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeToday">0</div>
+                        <div class="stat-label">Posted Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeWeek">0</div>
+                        <div class="stat-label">Posted This Week</div>
+                    </div>
+                </div>
+                
+                <div class="admin-controls">
+                    <button onclick="showTopUsers()" class="analytics-btn">View Top Users</button>
+                    <button onclick="showPostingTrends()" class="analytics-btn">Posting Trends</button>
+                </div>
+            </div>
+
             <div class="posts-section">
                 <h2>Existing Posts</h2>
                 <div id="postsList"></div>
             </div>
         </div>
+    </div>
+
+    <!-- Top Users Modal -->
+    <div id="topUsersModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeTopUsersModal()">&times;</span>
+            <h3>🏆 Top Users</h3>
+            <div id="topUsersList" class="top-users-list">
+                <div class="loading">Loading top users...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posting Trends Modal -->
+    <div id="trendsModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeTrendsModal()">&times;</span>
+            <h3>📈 Posting Trends (Last 30 Days)</h3>
+            <div id="trendsList" class="trends-list">
+                <div class="loading">Loading trends...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Status Indicator -->
+    <div id="realTimeIndicator" class="real-time-indicator">
+        ⚡ Live
     </div>
 
     <script src="admin.js"></script>

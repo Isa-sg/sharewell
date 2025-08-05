@@ -18,6 +18,30 @@
         </header>
 
         <div class="main-content">
+            <!-- User Scoring Section -->
+            <div class="scoring-section">
+                <h2>🏆 Your Score</h2>
+                <div class="score-cards">
+                    <div class="score-card">
+                        <div class="score-number" id="userPoints">0</div>
+                        <div class="score-label">Total Points</div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-number" id="userRank">#1</div>
+                        <div class="score-label">Rank</div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-number" id="userStreak">0</div>
+                        <div class="score-label">Current Streak</div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-number" id="userPosts">0</div>
+                        <div class="score-label">Posts</div>
+                    </div>
+                </div>
+                <button onclick="showAchievements()" class="achievements-btn">🏅 View Achievements</button>
+            </div>
+
             <div class="quick-post-section">
                 <h2>✏️ Quick Post</h2>
                 <p>Create a custom post right here</p>
@@ -28,10 +52,102 @@
                 </form>
             </div>
             
+            <div class="leaderboard-section">
+                <h2>🏅 Leaderboard</h2>
+                <div id="leaderboard" class="leaderboard-list">
+                    <div class="loading">Loading leaderboard...</div>
+                </div>
+                <button onclick="showFullLeaderboard()" class="view-more-btn">View Full Leaderboard</button>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="search-filter-section">
+                <div class="search-controls">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search posts by title or content...">
+                    <select id="filterStatus" class="filter-select">
+                        <option value="">All Posts</option>
+                        <option value="available">Available</option>
+                        <option value="posted">Posted</option>
+                    </select>
+                    <select id="filterAuthor" class="filter-select">
+                        <option value="">All Authors</option>
+                    </select>
+                    <button onclick="clearAllFilters()" class="clear-filters-btn">Clear Filters</button>
+                    <button onclick="toggleBulkMode()" class="clear-filters-btn" id="bulkModeBtn">Bulk Actions</button>
+                </div>
+                <div class="results-info" id="resultsInfo">Loading posts...</div>
+            </div>
+
+            <!-- Bulk Operations -->
+            <div class="bulk-operations" id="bulkOperations">
+                <div class="bulk-info">
+                    <span id="selectedCount">0</span> posts selected
+                </div>
+                <div class="bulk-actions">
+                    <button onclick="bulkMarkAsPosted()" class="bulk-btn">Mark as Posted</button>
+                    <button onclick="bulkDelete()" class="bulk-btn secondary">Delete</button>
+                    <button onclick="exportSelected()" class="bulk-btn">Export</button>
+                    <button onclick="exitBulkMode()" class="bulk-btn secondary">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Scheduling Section -->
+            <div class="schedule-section" id="scheduleSection">
+                <h3>📅 Schedule Posts</h3>
+                <div class="schedule-form">
+                    <input type="datetime-local" id="scheduleDateTime" min="">
+                    <select id="schedulePostSelect">
+                        <option value="">Select a post to schedule...</option>
+                    </select>
+                    <button onclick="schedulePost()" class="schedule-btn">Schedule Post</button>
+                </div>
+                
+                <div class="scheduled-posts" id="scheduledPosts">
+                    <h4>Scheduled Posts</h4>
+                    <div id="scheduledPostsList"></div>
+                </div>
+            </div>
+
+            <!-- Token Status -->
+            <div class="token-status" id="tokenStatus">
+                <div class="token-header">
+                    <div class="token-title">🔑 LinkedIn Token Status</div>
+                    <button onclick="refreshTokenInfo()" class="token-refresh-btn">
+                        <span class="spinner hidden" id="tokenSpinner"></span>
+                        Refresh
+                    </button>
+                </div>
+                <div class="token-info" id="tokenInfo">
+                    <div class="token-stat">
+                        <div class="token-stat-value" id="tokenStatus">Unknown</div>
+                        <div class="token-stat-label">Status</div>
+                    </div>
+                    <div class="token-stat">
+                        <div class="token-stat-value" id="tokenExpiry">-</div>
+                        <div class="token-stat-label">Expires</div>
+                    </div>
+                    <div class="token-stat">
+                        <div class="token-stat-value" id="tokenUsage">-</div>
+                        <div class="token-stat-label">API Usage</div>
+                    </div>
+                </div>
+                <div id="tokenWarning" class="token-warning hidden">
+                    ⚠️ Your LinkedIn token will expire soon. Please reconnect your account.
+                </div>
+                <div id="tokenError" class="token-error hidden">
+                    ❌ Your LinkedIn token has expired. Please reconnect your account.
+                </div>
+            </div>
+
             <div class="dashboard-section">
                 <h2>📰 Available Posts</h2>
                 <p>Click on any post to copy it and share on LinkedIn</p>
-                <div id="dashboardPosts"></div>
+                <div id="dashboardPosts">
+                    <!-- Loading skeleton -->
+                    <div class="skeleton skeleton-post"></div>
+                    <div class="skeleton skeleton-post"></div>
+                    <div class="skeleton skeleton-post"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -162,6 +278,43 @@
                 <button onclick="connectLinkedIn()" id="connectLinkedInBtn" class="hidden">Connect LinkedIn</button>
             </div>
         </div>
+    </div>
+
+    <!-- Achievements Modal -->
+    <div id="achievementsModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeAchievementsModal()">&times;</span>
+            <h3>🏅 Your Achievements</h3>
+            <div id="achievementsList" class="achievements-list">
+                <div class="loading">Loading achievements...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeLeaderboardModal()">&times;</span>
+            <h3>🏆 Full Leaderboard</h3>
+            <div id="fullLeaderboard" class="full-leaderboard">
+                <div class="loading">Loading leaderboard...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Point Notification -->
+    <div id="pointNotification" class="point-notification hidden">
+        <div class="notification-content">
+            <h4>🎉 Points Earned!</h4>
+            <p id="pointsEarned">+10 points</p>
+            <div id="pointsBreakdown"></div>
+            <div id="newAchievements" class="new-achievements"></div>
+        </div>
+    </div>
+
+    <!-- Real-time Status Indicator -->
+    <div id="realTimeIndicator" class="real-time-indicator">
+        ⚡ Live
     </div>
 
     <script src="dashboard.js"></script>

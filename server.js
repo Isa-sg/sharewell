@@ -9,23 +9,102 @@ const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cron = require('node-cron');
+const helmet = require('helmet');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult, param } = require('express-validator');
 require('dotenv').config();
+
+// Environment validation
+function validateEnvironment() {
+  const required = ['SESSION_SECRET'];
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    console.error('Missing required environment variables:', missing.join(', '));
+    console.error('Please check your .env file or environment configuration');
+    process.exit(1);
+  }
+  
+  if (process.env.SESSION_SECRET === 'your-secret-key-change-this') {
+    console.warn('WARNING: Using default session secret. Please change SESSION_SECRET in production!');
+  }
+}
+
+validateEnvironment();
 
 // Claude API integration
 const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const IS_PRODUCTION = NODE_ENV === 'production';
 
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https://api.anthropic.com", "https://ampcode.com"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
+}));
+
+// Rate limiting
+const generalLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
+  message: { error: 'Too many requests, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || 5,
+  message: { error: 'Too many authentication attempts, please try again later' },
+  skipSuccessfulRequests: true
+});
+
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: parseInt(process.env.AI_RATE_LIMIT_MAX) || 10,
+  message: { error: 'Too many AI requests, please slow down' }
+});
+
+app.use(generalLimiter);
+
+// Body parsing middleware with size limits
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
+
+// Secure session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
+  secret: process.env.SESSION_SECRET,
+  name: 'sessionId', // Don't use default session name
   resave: false,
   saveUninitialized: false,
-  cookie: { secure: false } // Set to true in production with HTTPS
+  cookie: { 
+    secure: IS_PRODUCTION || process.env.SECURE_COOKIES === 'true',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax'
+  }
 }));
 
 // Initialize Passport
@@ -400,14 +479,15 @@ async function saveNewsAsPosts(articles) {
   }
 }
 
-// LinkedIn OAuth Strategy
-passport.use(new LinkedInStrategy({
-  clientID: process.env.LINKEDIN_CLIENT_ID,
-  clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
-  callbackURL: process.env.LINKEDIN_REDIRECT_URI,
-  scope: ['r_liteprofile'],
-  state: true,
-}, async (accessToken, refreshToken, profile, done) => {
+// LinkedIn OAuth Strategy (only if credentials are provided)
+if (process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET && process.env.LINKEDIN_REDIRECT_URI) {
+  passport.use(new LinkedInStrategy({
+    clientID: process.env.LINKEDIN_CLIENT_ID,
+    clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+    callbackURL: process.env.LINKEDIN_REDIRECT_URI,
+    scope: ['r_liteprofile'],
+    state: true,
+  }, async (accessToken, refreshToken, profile, done) => {
   try {
     // Check if user exists with LinkedIn ID
     db.get(
@@ -456,7 +536,10 @@ passport.use(new LinkedInStrategy({
   } catch (error) {
     return done(error);
   }
-}));
+  }));
+} else {
+  console.log('LinkedIn OAuth not configured - missing credentials (LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI)');
+}
 
 // Passport serialization
 passport.serializeUser((user, done) => {
@@ -502,8 +585,48 @@ app.get('/auth/linkedin/callback',
   }
 );
 
+// Input validation helpers
+const validateRequest = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ 
+      error: 'Validation failed', 
+      details: errors.array().map(err => err.msg)
+    });
+  }
+  next();
+};
+
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  next();
+};
+
+// Admin middleware
+const requireAdmin = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  db.get('SELECT role FROM users WHERE id = ?', [req.session.userId], (err, user) => {
+    if (err || !user || user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    next();
+  });
+};
+
 // API Routes
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', 
+  authLimiter,
+  body('username').isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters').trim().escape(),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('email').isEmail().withMessage('Valid email required').normalizeEmail(),
+  validateRequest,
+  async (req, res) => {
   const { username, password, email } = req.body;
   
   try {
@@ -524,7 +647,12 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', 
+  authLimiter,
+  body('username').notEmpty().withMessage('Username required').trim().escape(),
+  body('password').notEmpty().withMessage('Password required'),
+  validateRequest,
+  (req, res) => {
   const { username, password } = req.body;
   
   db.get(
@@ -982,7 +1110,13 @@ app.get('/api/personalization/templates', (req, res) => {
 });
 
 // API endpoint for AI-powered post generation
-app.post('/api/posts/generate-ai', async (req, res) => {
+app.post('/api/posts/generate-ai', 
+  aiLimiter,
+  body('content').isString().trim().isLength({ min: 10, max: 5000 }).withMessage('Content must be 10-5000 characters'),
+  body('style').optional().isIn(['professional', 'casual', 'excited', 'technical']).withMessage('Invalid style'),
+  validateRequest,
+  requireAuth,
+  async (req, res) => {
   const { content, style = 'professional' } = req.body;
   
   if (!content) {
@@ -1143,6 +1277,185 @@ app.get('/api/news-status', (req, res) => {
   );
 });
 
+// API endpoint to get LinkedIn token information
+app.get('/api/linkedin/token-info', async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  try {
+    const user = await new Promise((resolve, reject) => {
+      db.get(
+        'SELECT linkedin_access_token, linkedin_expires_at, linkedin_profile_id FROM users WHERE id = ?',
+        [req.session.userId],
+        (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        }
+      );
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const connected = !!user.linkedin_access_token;
+    const expiresAt = user.linkedin_expires_at;
+    const isExpired = expiresAt ? new Date(expiresAt) < new Date() : true;
+
+    // Simulate API usage (this would need real LinkedIn API integration)
+    const usage = {
+      used: Math.floor(Math.random() * 50),
+      limit: 1000
+    };
+
+    res.json({
+      connected: connected && !isExpired,
+      expiresAt: expiresAt,
+      profileId: user.linkedin_profile_id,
+      usage: usage,
+      isExpired: isExpired
+    });
+
+  } catch (error) {
+    console.error('Error getting token info:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// API endpoint to schedule a post
+app.post('/api/posts/schedule', async (req, res) => {
+  const { postId, dateTime } = req.body;
+  
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  if (!postId || !dateTime) {
+    return res.status(400).json({ error: 'Post ID and date/time are required' });
+  }
+
+  const scheduleDate = new Date(dateTime);
+  if (scheduleDate <= new Date()) {
+    return res.status(400).json({ error: 'Schedule time must be in the future' });
+  }
+
+  try {
+    // Check if post exists
+    const post = await new Promise((resolve, reject) => {
+      db.get(
+        'SELECT id, title FROM posts WHERE id = ?',
+        [postId],
+        (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        }
+      );
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Create scheduled posts table if it doesn't exist
+    db.run(`
+      CREATE TABLE IF NOT EXISTS scheduled_posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        scheduled_for DATETIME NOT NULL,
+        status TEXT DEFAULT 'pending',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (post_id) REFERENCES posts (id),
+        FOREIGN KEY (user_id) REFERENCES users (id)
+      )
+    `);
+
+    // Schedule the post
+    db.run(
+      'INSERT INTO scheduled_posts (post_id, user_id, scheduled_for) VALUES (?, ?, ?)',
+      [postId, req.session.userId, scheduleDate.toISOString()],
+      function(err) {
+        if (err) {
+          console.error('Error scheduling post:', err);
+          return res.status(500).json({ error: 'Failed to schedule post' });
+        }
+        
+        res.json({ 
+          message: 'Post scheduled successfully',
+          scheduleId: this.lastID,
+          scheduledFor: scheduleDate.toISOString()
+        });
+      }
+    );
+
+  } catch (error) {
+    console.error('Error scheduling post:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// API endpoint to get scheduled posts
+app.get('/api/posts/scheduled', async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  try {
+    const scheduledPosts = await new Promise((resolve, reject) => {
+      db.all(`
+        SELECT sp.id, sp.scheduled_for, sp.status, p.title, p.content
+        FROM scheduled_posts sp
+        JOIN posts p ON sp.post_id = p.id
+        WHERE sp.user_id = ? AND sp.status = 'pending'
+        ORDER BY sp.scheduled_for ASC
+      `, [req.session.userId], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+
+    res.json({ scheduledPosts });
+
+  } catch (error) {
+    console.error('Error getting scheduled posts:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// API endpoint to cancel a scheduled post
+app.delete('/api/posts/scheduled/:id', async (req, res) => {
+  const scheduleId = req.params.id;
+  
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  try {
+    // Verify ownership and cancel
+    db.run(
+      'UPDATE scheduled_posts SET status = ? WHERE id = ? AND user_id = ?',
+      ['cancelled', scheduleId, req.session.userId],
+      function(err) {
+        if (err) {
+          console.error('Error cancelling scheduled post:', err);
+          return res.status(500).json({ error: 'Failed to cancel scheduled post' });
+        }
+        
+        if (this.changes === 0) {
+          return res.status(404).json({ error: 'Scheduled post not found' });
+        }
+        
+        res.json({ message: 'Scheduled post cancelled successfully' });
+      }
+    );
+
+  } catch (error) {
+    console.error('Error cancelling scheduled post:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Schedule automatic news fetching every 6 hours
 cron.schedule('0 */6 * * *', async () => {
   console.log('Running scheduled news sync...');
@@ -1165,6 +1478,24 @@ setTimeout(async () => {
   }
 }, 3000); // Wait 3 seconds after server start
 
+// Security error handler (should not leak sensitive information)
+app.use((err, req, res, next) => {
+  console.error('Security error:', err);
+  
+  // Don't leak sensitive error details in production
+  if (IS_PRODUCTION) {
+    res.status(500).json({ error: 'Internal server error' });
+  } else {
+    res.status(500).json({ 
+      error: 'Server error', 
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Environment: ${NODE_ENV}`);
+  console.log(`Security features enabled: CORS, Helmet, Rate Limiting, Input Validation`);
 });
