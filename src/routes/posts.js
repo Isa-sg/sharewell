@@ -2,6 +2,7 @@ const express = require('express');
 const {
   getAllPosts,
   createPost,
+  updatePost,
   usePost,
   postToLinkedInEndpoint,
   markPosted,
@@ -18,6 +19,7 @@ const router = express.Router();
 // Posts CRUD
 router.get('/', getAllPosts);
 router.post('/', createPost);
+router.put('/:id', updatePost);
 router.delete('/:id', deletePost);
 
 // Post usage tracking

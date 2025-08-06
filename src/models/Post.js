@@ -2,11 +2,11 @@ const { db } = require('../config/database');
 
 class Post {
   // Get all posts
-  static async getAll() {
+  static async getAll(limit = 50, offset = 0) {
     return new Promise((resolve, reject) => {
       db.all(
-        'SELECT p.id, p.title, p.content, p.image_url, p.source_url, p.created_by, p.created_at, u.username as author FROM posts p LEFT JOIN users u ON p.created_by = u.id ORDER BY p.created_at DESC',
-        [],
+        'SELECT p.id, p.title, p.content, p.image_url, p.source_url, p.created_by, p.created_at, u.username as author FROM posts p LEFT JOIN users u ON p.created_by = u.id ORDER BY p.created_at DESC LIMIT ? OFFSET ?',
+        [limit, offset],
         (err, rows) => {
           if (err) reject(err);
           else resolve(rows);
@@ -38,6 +38,20 @@ class Post {
         (err, row) => {
           if (err) reject(err);
           else resolve(row);
+        }
+      );
+    });
+  }
+
+  // Update post
+  static async update(id, content) {
+    return new Promise((resolve, reject) => {
+      db.run(
+        'UPDATE posts SET content = ? WHERE id = ?',
+        [content, id],
+        function(err) {
+          if (err) reject(err);
+          else resolve(this.changes > 0);
         }
       );
     });

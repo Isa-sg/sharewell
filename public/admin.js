@@ -1,233 +1,223 @@
-// DOM elements
-const createPostForm = document.getElementById('createPostForm');
-const postsList = document.getElementById('postsList');
+// Admin panel specific functionality
+let currentTab = 'posts';
 
-// Enhanced state management
-const adminState = {
-    healthChecks: {
-        database: true,
-        api: true,
-        linkedin: false,
-        memory: true
-    },
-    realTimeConnected: true,
-    lastHealthCheck: 0
-};
-
-// Enhanced toast notifications
-function showToast(message, type = 'info', duration = 3000) {
-    // Remove existing toasts
-    document.querySelectorAll('.toast').forEach(toast => toast.remove());
-    
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 16px 20px;
-        border-radius: 8px;
-        z-index: 10000;
-        color: white;
-        font-weight: 500;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-        max-width: 300px;
-        ${type === 'success' ? 'background: linear-gradient(135deg, #10b981, #059669);' : 
-          type === 'error' ? 'background: linear-gradient(135deg, #ef4444, #dc2626);' : 
-          type === 'warning' ? 'background: linear-gradient(135deg, #f59e0b, #d97706);' : 
-          'background: linear-gradient(135deg, #3b82f6, #2563eb);'}
-    `;
-    
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    // Animate in
-    requestAnimationFrame(() => {
-        toast.style.transform = 'translateX(0)';
-    });
-    
-    // Auto remove
-    setTimeout(() => {
-        toast.style.transform = 'translateX(100%)';
-        setTimeout(() => toast.remove(), 300);
-    }, duration);
-}
-
-// Real-time updates
-const realTime = {
-    indicator: null,
-    
-    init() {
-        this.indicator = document.getElementById('realTimeIndicator');
-        this.updateStatus(true);
-        
-        // Check for updates every 30 seconds
-        setInterval(() => {
-            this.performHealthChecks();
-        }, 30000);
-        
-        // Initial health check
-        setTimeout(() => this.performHealthChecks(), 2000);
-    },
-    
-    updateStatus(connected) {
-        adminState.realTimeConnected = connected;
-        if (this.indicator) {
-            this.indicator.textContent = connected ? '⚡ Live' : '❌ Offline';
-            this.indicator.classList.toggle('disconnected', !connected);
-        }
-    },
-    
-    async performHealthChecks() {
-        try {
-            // Database health check
-            const dbResponse = await fetch('/api/posts?limit=1');
-            adminState.healthChecks.database = dbResponse.ok;
-            
-            // API health check
-            const apiResponse = await fetch('/api/health');
-            adminState.healthChecks.api = apiResponse.ok || dbResponse.ok; // Fallback if health endpoint doesn't exist
-            
-            // LinkedIn health check
-            const linkedinResponse = await fetch('/api/linkedin/status');
-            adminState.healthChecks.linkedin = linkedinResponse.ok;
-            
-            // Memory health (simulated)
-            adminState.healthChecks.memory = Math.random() > 0.1; // 90% chance of healthy
-            
-            this.updateHealthIndicators();
-            this.updateStatus(true);
-            
-        } catch (error) {
-            console.error('Health check failed:', error);
-            this.updateStatus(false);
-        }
-    },
-    
-    updateHealthIndicators() {
-        const indicators = {
-            dbHealth: adminState.healthChecks.database,
-            apiHealth: adminState.healthChecks.api,
-            linkedinHealth: adminState.healthChecks.linkedin,
-            memoryHealth: adminState.healthChecks.memory
-        };
-        
-        const statuses = {
-            dbStatus: adminState.healthChecks.database ? 'Connected' : 'Error',
-            apiStatus: adminState.healthChecks.api ? 'Healthy' : 'Error',
-            linkedinStatus: adminState.healthChecks.linkedin ? 'Connected' : 'Limited',
-            memoryUsage: adminState.healthChecks.memory ? 'Normal' : 'High'
-        };
-        
-        Object.entries(indicators).forEach(([id, healthy]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.className = `health-status ${healthy ? 'healthy' : 'error'}`;
-            }
-        });
-        
-        Object.entries(statuses).forEach(([id, status]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = status;
-            }
-        });
-    }
-};
-
-// Enhanced analytics data
-const analytics = {
-    async loadSystemMetrics() {
-        try {
-            // Simulate loading real system metrics
-            // In a real implementation, these would come from actual monitoring APIs
-            const metrics = {
-                activeUsers: Math.floor(Math.random() * 100) + 50,
-                userGrowth: (Math.random() * 20 - 5).toFixed(1),
-                postsShared: Math.floor(Math.random() * 500) + 200,
-                engagementGrowth: (Math.random() * 15).toFixed(1),
-                apiRequests: Math.floor(Math.random() * 10000) + 5000,
-                apiGrowth: (Math.random() * 10 - 5).toFixed(1),
-                storageUsed: Math.floor(Math.random() * 100) + 20,
-                storageGrowth: (Math.random() * 20).toFixed(1)
-            };
-            
-            this.updateAnalyticsDisplay(metrics);
-            
-        } catch (error) {
-            console.error('Error loading system metrics:', error);
-        }
-    },
-    
-    updateAnalyticsDisplay(metrics) {
-        // Update values
-        const updates = {
-            activeUsers: metrics.activeUsers,
-            postsShared: metrics.postsShared,
-            apiRequests: metrics.apiRequests.toLocaleString(),
-            storageUsed: `${metrics.storageUsed}%`
-        };
-        
-        Object.entries(updates).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            }
-        });
-        
-        // Update growth indicators
-        const growthUpdates = {
-            userGrowth: metrics.userGrowth,
-            engagementGrowth: metrics.engagementGrowth,
-            apiGrowth: metrics.apiGrowth,
-            storageGrowth: metrics.storageGrowth
-        };
-        
-        Object.entries(growthUpdates).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                const isPositive = parseFloat(value) >= 0;
-                element.textContent = `${isPositive ? '+' : ''}${value}%`;
-                element.className = `analytics-change ${isPositive ? 'positive' : 'negative'}`;
-            }
-        });
-    }
-};
-
-// Initialize admin panel
+// Initialize admin panel when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Enhanced Admin Panel initializing...');
-    
-    // Initialize modules
-    realTime.init();
-    analytics.loadSystemMetrics();
-    
-    // Load existing data
-    loadPosts();
-    loadNewsStatus();
-    loadScoringStats();
-    
-    // Event listeners
-    createPostForm.addEventListener('submit', handleCreatePost);
-    
-    // Refresh analytics every 2 minutes
-    setInterval(() => {
-        analytics.loadSystemMetrics();
-    }, 120000);
-    
-    console.log('✅ Enhanced Admin Panel loaded');
+    console.log('Admin panel loaded, initializing...');
+    loadAdminData();
+    setupEventListeners();
+    setupNavigationButtons();
+    setupTabButtons();
 });
 
-// Create new post
-async function handleCreatePost(e) {
-    e.preventDefault();
+function setupEventListeners() {
+    // Create post form
+    const createPostForm = document.getElementById('createPostFormElement');
+    if (createPostForm) {
+        createPostForm.addEventListener('submit', handleCreatePost);
+    }
     
-    const title = document.getElementById('postTitle').value;
-    const content = document.getElementById('postContent').value;
-    const imageUrl = document.getElementById('postImageUrl').value;
+    // Show create post form button
+    const showCreatePostBtn = document.getElementById('showCreatePostBtn');
+    if (showCreatePostBtn) {
+        showCreatePostBtn.addEventListener('click', showCreatePostForm);
+    }
+    
+    // Hide create post form button
+    const hideCreatePostBtn = document.getElementById('hideCreatePostBtn');
+    if (hideCreatePostBtn) {
+        hideCreatePostBtn.addEventListener('click', hideCreatePostForm);
+    }
+    
+    // Sync news button
+    const syncNewsBtn = document.getElementById('syncNewsBtn');
+    if (syncNewsBtn) {
+        syncNewsBtn.addEventListener('click', syncNews);
+    }
+}
+
+function setupNavigationButtons() {
+    // Home button
+    const homeBtn = document.getElementById('adminHomeBtn');
+    if (homeBtn) {
+        homeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Admin Home button clicked');
+            window.location.href = '/';
+        });
+    }
+    
+    // Dashboard button
+    const dashboardBtn = document.getElementById('adminDashboardBtn');
+    if (dashboardBtn) {
+        dashboardBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Admin Dashboard button clicked');
+            window.location.href = '/dashboard';
+        });
+    }
+    
+    // Logout button
+    const logoutBtn = document.getElementById('adminLogoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Admin Logout button clicked');
+            handleLogout();
+        });
+    }
+}
+
+function setupTabButtons() {
+    const tabButtons = document.querySelectorAll('.admin-tabs .tab-btn');
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabName = this.getAttribute('data-tab');
+            if (tabName) {
+                showTab(tabName, this);
+            }
+        });
+    });
+}
+
+async function handleLogout() {
+    try {
+        await fetch('/auth/logout', { method: 'POST' });
+        window.location.href = '/';
+    } catch (error) {
+        console.error('Error logging out:', error);
+        alert('Error logging out');
+    }
+}
+
+function setupPostActionListeners() {
+    const postsList = document.getElementById('adminPostsList');
+    if (!postsList) return;
+    
+    // Use event delegation for dynamically created buttons
+    postsList.addEventListener('click', function(e) {
+        const postId = e.target.getAttribute('data-post-id');
+        if (!postId) return;
+        
+        if (e.target.classList.contains('edit-btn')) {
+            e.preventDefault();
+            editPost(parseInt(postId));
+        } else if (e.target.classList.contains('delete-btn')) {
+            e.preventDefault();
+            deletePost(parseInt(postId));
+        }
+    });
+}
+
+async function loadAdminData() {
+    try {
+        // Load data based on current tab
+        switch (currentTab) {
+            case 'posts':
+                await loadAdminPosts();
+                break;
+            case 'news':
+                await loadNewsStatus();
+                break;
+            case 'stats':
+                await loadAdminStats();
+                break;
+            case 'users':
+                await loadUsers();
+                break;
+        }
+    } catch (error) {
+        console.error('Error loading admin data:', error);
+        showMessage('Error loading admin data', 'error');
+    }
+}
+
+function showTab(tabName, buttonElement) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.admin-tabs .tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    
+    // Add active class to selected tab button
+    if (buttonElement) {
+        buttonElement.classList.add('active');
+    }
+    
+    // Update current tab and load data
+    currentTab = tabName;
+    loadAdminData();
+}
+
+// Posts Management
+async function loadAdminPosts() {
+    try {
+        const response = await fetch('/api/posts?limit=50');
+        if (response.ok) {
+            const data = await response.json();
+            displayAdminPosts(data.posts || []);
+        } else {
+            throw new Error('Failed to load posts');
+        }
+    } catch (error) {
+        console.error('Error loading admin posts:', error);
+        document.getElementById('adminPostsList').innerHTML = '<div class="error">Error loading posts</div>';
+    }
+}
+
+function displayAdminPosts(posts) {
+    const postsList = document.getElementById('adminPostsList');
+    
+    if (posts.length === 0) {
+        postsList.innerHTML = '<div class="no-posts">No posts available</div>';
+        return;
+    }
+    
+    postsList.innerHTML = posts.map(post => `
+        <div class="admin-post-item" data-post-id="${post.id}">
+            <div class="admin-post-content">
+                <div class="admin-post-content">${escapeHtml(post.content)}</div>
+                <div class="admin-post-meta">
+                    Created: ${new Date(post.created_at).toLocaleDateString()} | 
+                    Used: ${post.usage_count || 0} times
+                </div>
+            </div>
+            <div class="admin-post-actions">
+                <button class="edit-btn" data-post-id="${post.id}">Edit</button>
+                <button class="delete-btn" data-post-id="${post.id}">Delete</button>
+            </div>
+        </div>
+    `).join('');
+    
+    // Set up event listeners for post action buttons
+    setupPostActionListeners();
+}
+
+function showCreatePostForm() {
+    document.getElementById('createPostForm').classList.remove('hidden');
+}
+
+function hideCreatePostForm() {
+    document.getElementById('createPostForm').classList.add('hidden');
+    document.getElementById('createPostFormElement').reset();
+}
+
+async function handleCreatePost(event) {
+    event.preventDefault();
+    
+    const content = document.getElementById('postContent').value.trim();
+    if (!content) {
+        showMessage('Post content is required', 'error');
+        return;
+    }
     
     try {
         const response = await fetch('/api/posts', {
@@ -235,330 +225,330 @@ async function handleCreatePost(e) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                title,
-                content,
-                image_url: imageUrl
-            }),
+            body: JSON.stringify({ content }),
         });
         
-        const data = await response.json();
-        
         if (response.ok) {
-            showToast('Post created successfully!', 'success');
-            createPostForm.reset();
-            loadPosts();
+            showMessage('Post created successfully!', 'success');
+            hideCreatePostForm();
+            loadAdminPosts();
         } else {
-            showToast(data.error, 'error');
+            const error = await response.json();
+            showMessage(error.error || 'Error creating post', 'error');
         }
     } catch (error) {
-        showToast('Network error. Please try again.', 'error');
+        console.error('Error creating post:', error);
+        showMessage('Network error', 'error');
     }
 }
 
-// Load and display posts
-async function loadPosts() {
-    try {
-        const response = await fetch('/api/posts');
-        const posts = await response.json();
-        
-        if (response.ok) {
-            displayPosts(posts);
-        } else {
-            showMessage('Error loading posts', 'error');
-        }
-    } catch (error) {
-        showMessage('Network error loading posts', 'error');
-    }
-}
-
-function displayPosts(posts) {
-    postsList.innerHTML = '';
-    
-    if (posts.length === 0) {
-        postsList.innerHTML = '<p>No posts created yet.</p>';
-        return;
-    }
-    
-    posts.forEach(post => {
-        const postDiv = document.createElement('div');
-        postDiv.className = 'post-item';
-        postDiv.innerHTML = `
-            <h3>${post.title}</h3>
-            <p>${post.content}</p>
-            ${post.image_url ? `<img src="${post.image_url}" alt="Post image" style="max-width: 200px; margin: 10px 0;">` : ''}
-            <small>Created by: ${post.author}${post.source_url ? ` • <a href="${post.source_url}" target="_blank">Read original</a>` : ''}</small>
-            <div class="post-actions">
-                <button onclick="deletePost(${post.id})" class="delete-btn">Delete Post</button>
-            </div>
-        `;
-        postsList.appendChild(postDiv);
-    });
-}
-
-// News sync functions
-async function loadNewsStatus() {
-    try {
-        const response = await fetch('/api/news-status');
-        const data = await response.json();
-        
-        if (response.ok) {
-            document.getElementById('newsCount').textContent = data.newsPostsCount;
-        }
-    } catch (error) {
-        console.error('Error loading news status:', error);
-        document.getElementById('newsCount').textContent = 'Error';
-    }
-}
-
-async function syncNews() {
-    const syncBtn = document.getElementById('syncNewsBtn');
-    const originalText = syncBtn.textContent;
-    
-    syncBtn.textContent = 'Syncing...';
-    syncBtn.disabled = true;
-    
-    try {
-        const response = await fetch('/api/sync-news', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showMessage(`News sync completed! Found ${data.articlesFound} articles.`, 'success');
-            loadPosts(); // Refresh posts list
-            loadNewsStatus(); // Update news count
-        } else {
-            showMessage(data.error || 'Failed to sync news', 'error');
-        }
-    } catch (error) {
-        showMessage('Network error during news sync', 'error');
-    } finally {
-        syncBtn.textContent = originalText;
-        syncBtn.disabled = false;
-    }
-}
-
-// Delete post function
 async function deletePost(postId) {
-    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to delete this post?')) {
         return;
     }
     
     try {
         const response = await fetch(`/api/posts/${postId}`, {
             method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
         });
-        
-        const data = await response.json();
         
         if (response.ok) {
             showMessage('Post deleted successfully!', 'success');
-            loadPosts(); // Refresh posts list
-            loadNewsStatus(); // Update counts
+            loadAdminPosts();
         } else {
-            showMessage(data.error || 'Failed to delete post', 'error');
+            const error = await response.json();
+            showMessage(error.error || 'Error deleting post', 'error');
         }
     } catch (error) {
-        showMessage('Network error during deletion', 'error');
+        console.error('Error deleting post:', error);
+        showMessage('Network error', 'error');
     }
 }
 
-// Navigation functions
-function goHome() {
-    window.location.href = '/';
-}
-
-function goToDashboard() {
-    window.location.href = '/dashboard';
-}
-
-async function logout() {
+async function editPost(postId) {
     try {
-        await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/';
+        // Get the current post content
+        const response = await fetch('/api/posts');
+        if (!response.ok) {
+            throw new Error('Failed to fetch posts');
+        }
+        
+        const data = await response.json();
+        const post = data.posts.find(p => p.id === postId);
+        
+        if (!post) {
+            showMessage('Post not found', 'error');
+            return;
+        }
+        
+        // Create edit form modal
+        const modal = createEditModal(post);
+        document.body.appendChild(modal);
+        
+        // Show the modal
+        modal.style.display = 'flex';
+        
+        // Focus on the textarea
+        const textarea = modal.querySelector('#editPostContent');
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        
     } catch (error) {
-        showMessage('Error logging out', 'error');
+        console.error('Error starting post edit:', error);
+        showMessage('Error loading post for editing', 'error');
     }
+}
+
+function createEditModal(post) {
+    const modal = document.createElement('div');
+    modal.className = 'edit-modal';
+    modal.innerHTML = `
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <h3>Edit Post</h3>
+                <button class="close-edit-modal" type="button">&times;</button>
+            </div>
+            <form id="editPostForm">
+                <textarea id="editPostContent" rows="6" required>${escapeHtml(post.content)}</textarea>
+                <div class="edit-form-actions">
+                    <button type="submit" class="save-edit-btn">Save Changes</button>
+                    <button type="button" class="cancel-edit-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    // Add event listeners
+    const closeBtn = modal.querySelector('.close-edit-modal');
+    const cancelBtn = modal.querySelector('.cancel-edit-btn');
+    const form = modal.querySelector('#editPostForm');
+    
+    const closeModal = () => {
+        modal.remove();
+    };
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newContent = modal.querySelector('#editPostContent').value.trim();
+        
+        if (!newContent) {
+            showMessage('Post content cannot be empty', 'error');
+            return;
+        }
+        
+        if (newContent === post.content) {
+            showMessage('No changes detected', 'info');
+            closeModal();
+            return;
+        }
+        
+        await savePostEdit(post.id, newContent, closeModal);
+    });
+    
+    return modal;
+}
+
+async function savePostEdit(postId, newContent, closeModal) {
+    try {
+        const response = await fetch(`/api/posts/${postId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content: newContent }),
+        });
+        
+        if (response.ok) {
+            showMessage('Post updated successfully!', 'success');
+            closeModal();
+            loadAdminPosts(); // Reload the posts list
+        } else {
+            const error = await response.json();
+            showMessage(error.error || 'Error updating post', 'error');
+        }
+    } catch (error) {
+        console.error('Error updating post:', error);
+        showMessage('Network error while updating post', 'error');
+    }
+}
+
+// News Management
+async function loadNewsStatus() {
+    try {
+        const response = await fetch('/api/admin/news-status', {
+            headers: {
+                'x-admin-bypass': 'development'
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            displayNewsStatus(data);
+        } else {
+            throw new Error('Failed to load news status');
+        }
+    } catch (error) {
+        console.error('Error loading news status:', error);
+        document.getElementById('newsStatus').innerHTML = '<div class="error">Error loading news status</div>';
+    }
+}
+
+function displayNewsStatus(data) {
+    const statusContainer = document.getElementById('newsStatus');
+    
+    statusContainer.innerHTML = `
+        <div class="sync-status">
+            <div class="status-indicator ${data.status || 'warning'}"></div>
+            <strong>Last Sync:</strong> ${data.lastSync ? new Date(data.lastSync).toLocaleString() : 'Never'}
+        </div>
+        <div class="sync-details">
+            <p><strong>Total Posts:</strong> ${data.totalPosts || 0}</p>
+            <p><strong>Posts Added Today:</strong> ${data.postsToday || 0}</p>
+            <p><strong>Next Scheduled Sync:</strong> ${data.nextSync ? new Date(data.nextSync).toLocaleString() : 'Not scheduled'}</p>
+        </div>
+    `;
+}
+
+async function syncNews() {
+    try {
+        const response = await fetch('/api/admin/sync-news', {
+            method: 'POST',
+            headers: {
+                'x-admin-bypass': 'development'
+            }
+        });
+        
+        if (response.ok) {
+            showMessage('News sync started successfully!', 'success');
+            // Reload news status after a short delay
+            setTimeout(() => loadNewsStatus(), 2000);
+        } else {
+            const error = await response.json();
+            showMessage(error.error || 'Error starting news sync', 'error');
+        }
+    } catch (error) {
+        console.error('Error syncing news:', error);
+        showMessage('Network error', 'error');
+    }
+}
+
+// Statistics
+async function loadAdminStats() {
+    try {
+        const response = await fetch('/api/admin/scoring-stats', {
+            headers: {
+                'x-admin-bypass': 'development'
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            displayAdminStats(data);
+        } else {
+            throw new Error('Failed to load admin stats');
+        }
+    } catch (error) {
+        console.error('Error loading admin stats:', error);
+        document.getElementById('statsGrid').innerHTML = '<div class="error">Error loading statistics</div>';
+    }
+}
+
+function displayAdminStats(data) {
+    const statsGrid = document.getElementById('statsGrid');
+    
+    statsGrid.innerHTML = `
+        <div class="admin-stat-card">
+            <h3>Total Users</h3>
+            <div class="stat-value">${data.totalUsers || 0}</div>
+            <div class="stat-description">Registered users</div>
+        </div>
+        <div class="admin-stat-card">
+            <h3>Total Posts</h3>
+            <div class="stat-value">${data.totalPosts || 0}</div>
+            <div class="stat-description">Available posts</div>
+        </div>
+        <div class="admin-stat-card">
+            <h3>LinkedIn Posts</h3>
+            <div class="stat-value">${data.linkedinPosts || 0}</div>
+            <div class="stat-description">Posted to LinkedIn</div>
+        </div>
+        <div class="admin-stat-card">
+            <h3>Active Users</h3>
+            <div class="stat-value">${data.activeUsers || 0}</div>
+            <div class="stat-description">Users with activity this week</div>
+        </div>
+        <div class="admin-stat-card">
+            <h3>Average Score</h3>
+            <div class="stat-value">${Math.round(data.averageScore || 0)}</div>
+            <div class="stat-description">Points per user</div>
+        </div>
+        <div class="admin-stat-card">
+            <h3>Top Streak</h3>
+            <div class="stat-value">${data.topStreak || 0}</div>
+            <div class="stat-description">Longest current streak</div>
+        </div>
+    `;
+}
+
+// Users Management
+async function loadUsers() {
+    try {
+        const response = await fetch('/api/admin/users', {
+            headers: {
+                'x-admin-bypass': 'development'
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            displayUsers(data.users || []);
+        } else {
+            throw new Error('Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        document.getElementById('usersList').innerHTML = '<div class="error">Error loading users</div>';
+    }
+}
+
+function displayUsers(users) {
+    const usersList = document.getElementById('usersList');
+    
+    if (users.length === 0) {
+        usersList.innerHTML = '<div class="no-users">No users found</div>';
+        return;
+    }
+    
+    usersList.innerHTML = users.map(user => `
+        <div class="user-item">
+            <div class="user-info">
+                <h4>${escapeHtml(user.username)}</h4>
+                <p>${escapeHtml(user.email || 'No email')}</p>
+                <p>Score: ${user.score || 0} | Streak: ${user.streak || 0}</p>
+            </div>
+            <div class="user-role ${user.role || 'user'}">${user.role || 'user'}</div>
+        </div>
+    `).join('');
 }
 
 // Utility functions
-function showMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.textContent = message;
-    messageDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 20px;
-        border-radius: 5px;
-        z-index: 1000;
-        color: white;
-        font-weight: bold;
-        ${type === 'success' ? 'background-color: #4CAF50;' : 'background-color: #f44336;'}
-    `;
-    
-    document.body.appendChild(messageDiv);
-    
-    setTimeout(() => {
-        messageDiv.remove();
-    }, 3000);
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
-// SCORING ANALYTICS FUNCTIONS
-
-// Load scoring stats for admin dashboard
-async function loadScoringStats() {
-    try {
-        const response = await fetch('/api/admin/scoring-stats');
-        if (response.ok) {
-            const data = await response.json();
-            updateStatsDisplay(data.stats);
-        } else {
-            console.error('Failed to load scoring stats');
-        }
-    } catch (error) {
-        console.error('Error loading scoring stats:', error);
-    }
-}
-
-// Update stats display
-function updateStatsDisplay(stats) {
-    document.getElementById('totalUsers').textContent = stats.total_users || 0;
-    document.getElementById('totalPoints').textContent = stats.total_points_awarded || 0;
-    document.getElementById('totalPosts').textContent = stats.total_posts || 0;
-    document.getElementById('totalAchievements').textContent = stats.total_achievements || 0;
-    document.getElementById('activeToday').textContent = stats.active_users_today || 0;
-    document.getElementById('activeWeek').textContent = stats.active_users_week || 0;
-}
-
-// Show top users modal
-async function showTopUsers() {
-    const modal = document.getElementById('topUsersModal');
-    const topUsersList = document.getElementById('topUsersList');
-    
-    modal.classList.remove('hidden');
-    topUsersList.innerHTML = '<div class="loading">Loading top users...</div>';
-    
-    try {
-        const response = await fetch('/api/leaderboard?limit=20');
-        if (response.ok) {
-            const data = await response.json();
-            displayTopUsers(data.leaderboard);
-        } else {
-            topUsersList.innerHTML = '<div class="loading">Failed to load users</div>';
-        }
-    } catch (error) {
-        topUsersList.innerHTML = '<div class="loading">Error loading users</div>';
-    }
-}
-
-// Display top users
-function displayTopUsers(users) {
-    const topUsersList = document.getElementById('topUsersList');
-    
-    if (!users || users.length === 0) {
-        topUsersList.innerHTML = '<div class="loading">No users yet</div>';
-        return;
-    }
-    
-    topUsersList.innerHTML = users.map((user, index) => {
-        const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : '';
-        const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '#' + (index + 1);
-        
-        return `
-            <div class="leaderboard-item ${rankClass}" style="margin-bottom: 10px; padding: 15px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center;">
-                <div style="font-size: 1.5rem; font-weight: bold; margin-right: 15px; width: 40px; text-align: center;">${rankIcon}</div>
-                <div style="flex: 1; font-weight: 600;">${user.username}</div>
-                <div style="font-size: 1.1rem; font-weight: bold; color: #667eea; margin-right: 15px;">${user.total_points} pts</div>
-                <div style="font-size: 0.9rem; color: #6b7280;">${user.current_streak}🔥 | ${user.posts_count} posts</div>
-            </div>
-        `;
-    }).join('');
-}
-
-// Show posting trends modal
-async function showPostingTrends() {
-    const modal = document.getElementById('trendsModal');
-    const trendsList = document.getElementById('trendsList');
-    
-    modal.classList.remove('hidden');
-    trendsList.innerHTML = '<div class="loading">Loading trends...</div>';
-    
-    try {
-        const response = await fetch('/api/admin/posting-trends');
-        if (response.ok) {
-            const data = await response.json();
-            displayPostingTrends(data.trends);
-        } else {
-            trendsList.innerHTML = '<div class="loading">Failed to load trends</div>';
-        }
-    } catch (error) {
-        trendsList.innerHTML = '<div class="loading">Error loading trends</div>';
-    }
-}
-
-// Display posting trends
-function displayPostingTrends(trends) {
-    const trendsList = document.getElementById('trendsList');
-    
-    if (!trends || trends.length === 0) {
-        trendsList.innerHTML = '<div class="loading">No posting data yet</div>';
-        return;
-    }
-    
-    // Calculate trend indicators
-    const trendsWithIndicators = trends.map((trend, index) => {
-        const previousTrend = trends[index + 1];
-        let indicator = '';
-        
-        if (previousTrend) {
-            const change = trend.posts_count - previousTrend.posts_count;
-            if (change > 0) indicator = '📈';
-            else if (change < 0) indicator = '📉';
-            else indicator = '➡️';
-        }
-        
-        return { ...trend, indicator };
-    });
-    
-    trendsList.innerHTML = `
-        <div style="margin-bottom: 20px;">
-            <h4 style="color: #374151; margin-bottom: 15px;">Daily Posting Activity (Last 30 Days)</h4>
-            ${trendsWithIndicators.map(trend => `
-                <div style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: #f9fafb; border-radius: 6px; border-left: 4px solid #e5e7eb;">
-                    <div style="font-weight: 600; margin-right: 15px; width: 100px;">${new Date(trend.date).toLocaleDateString()}</div>
-                    <div style="flex: 1; display: flex; align-items: center;">
-                        <span style="margin-right: 10px; font-size: 1.2rem;">${trend.indicator}</span>
-                        <span style="font-weight: bold; color: #4f46e5; margin-right: 15px;">${trend.posts_count} posts</span>
-                        <span style="color: #6b7280;">${trend.unique_users} users active</span>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-        
-        <div style="margin-top: 25px; padding: 15px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #0ea5e9;">
-            <h4 style="color: #0369a1; margin-bottom: 10px;">Summary</h4>
-            <p style="color: #075985; margin: 5px 0;">Total Posts: <strong>${trends.reduce((sum, t) => sum + t.posts_count, 0)}</strong></p>
-            <p style="color: #075985; margin: 5px 0;">Average per Day: <strong>${Math.round(trends.reduce((sum, t) => sum + t.posts_count, 0) / trends.length)}</strong></p>
-            <p style="color: #075985; margin: 5px 0;">Peak Day: <strong>${trends.reduce((max, t) => t.posts_count > max.posts_count ? t : max).posts_count} posts</strong></p>
-        </div>
-    `;
-}
-
-// Close modal functions
-function closeTopUsersModal() {
-    document.getElementById('topUsersModal').classList.add('hidden');
-}
-
-function closeTrendsModal() {
-    document.getElementById('trendsModal').classList.add('hidden');
-}
+// Functions are now handled by event listeners, no need to expose globally

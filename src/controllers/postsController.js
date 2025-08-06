@@ -39,30 +39,25 @@ const { apiLogger } = require('../config/logger');
  */
 const getAllPosts = async (req, res) => {
   try {
-    const baseQuery = `
-      SELECT p.*, u.username as created_by_username 
-      FROM posts p 
-      LEFT JOIN users u ON p.created_by = u.id
-    `;
+    // Simple approach to get posts working quickly
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
     
-    const searchColumns = ['p.title', 'p.content', 'u.username'];
-    const allowedSortColumns = ['created_at', 'title', 'created_by'];
+    const posts = await Post.getAll(limit, offset);
     
-    const result = await PaginationHelper.paginate(pooledQuery, {
-      baseQuery,
-      searchColumns,
-      allowedSortColumns,
-      params: req.query,
-      requestUrl: req.originalUrl,
-    });
-
     apiLogger.info('Posts retrieved', {
       userId: req.session?.userId,
-      page: req.query.page || 1,
-      total: result.pagination.total_items,
+      count: posts.length,
     });
 
-    res.json(result);
+    res.json({ 
+      posts: posts,
+      pagination: {
+        total_items: posts.length,
+        page: 1,
+        limit: limit
+      }
+    });
   } catch (error) {
     apiLogger.error('Failed to get posts', { error: error.message });
     res.status(500).json({ error: 'Server error', message: error.message });
@@ -180,6 +175,56 @@ const getPostsStatus = async (req, res) => {
     res.json({ postedPosts: postedPostIds });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Update post
+const updatePost = async (req, res) => {
+  const postId = req.params.id;
+  const { content } = req.body;
+  
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  
+  if (!content || content.trim() === '') {
+    return res.status(400).json({ error: 'Content is required' });
+  }
+  
+  try {
+    // Check if user is admin or post owner
+    const user = await User.findById(req.session.userId);
+    const post = await Post.findById(postId);
+    
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    
+    if (user.role !== 'admin' && post.created_by !== req.session.userId) {
+      return res.status(403).json({ error: 'Not authorized to edit this post' });
+    }
+    
+    // Update the post
+    const updated = await Post.update(postId, content.trim());
+    
+    if (!updated) {
+      return res.status(404).json({ error: 'Post not found or no changes made' });
+    }
+    
+    apiLogger.info('Post updated', {
+      userId: req.session.userId,
+      postId: postId,
+      userAgent: req.headers['user-agent']
+    });
+    
+    res.json({ message: 'Post updated successfully' });
+  } catch (error) {
+    apiLogger.error('Post update failed', {
+      userId: req.session.userId,
+      postId: postId,
+      error: error.message
+    });
+    res.status(500).json({ error: 'Failed to update post' });
   }
 };
 
@@ -376,6 +421,7 @@ const getTemplates = (req, res) => {
 module.exports = {
   getAllPosts,
   createPost,
+  updatePost,
   usePost,
   postToLinkedInEndpoint,
   markPosted,
