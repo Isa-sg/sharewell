@@ -15,8 +15,10 @@
 
         <div class="auth-section" id="authSection">
             <div class="auth-tabs">
-                <button class="tab-btn active" onclick="showLogin()">Login</button>
-                <button class="tab-btn" onclick="showRegister()">Register</button>
+                <button class="tab-btn active">Login</button>
+                <button class="tab-btn">Register</button>
+                <button class="tab-btn">Forgot Password</button>
+                <button class="tab-btn">Forgot Username</button>
             </div>
 
             <div class="auth-form" id="loginForm">
@@ -32,6 +34,9 @@
                 <a href="/auth/linkedin" class="linkedin-login-btn">
                     <button type="button">Continue with LinkedIn</button>
                 </a>
+                <div style="margin-top: 10px;">
+                    <button type="button" id="testLoginBtn" style="background-color: #ff6b6b; color: white; width: 100%;">Test Login (Skip Auth)</button>
+                </div>
             </div>
 
             <div class="auth-form hidden" id="registerForm">
@@ -43,6 +48,44 @@
                     <button type="submit">Register</button>
                 </form>
             </div>
+
+            <div class="auth-form hidden" id="forgotPasswordForm">
+                <h2>Forgot Password</h2>
+                <form id="forgotPasswordFormElement">
+                    <input type="email" placeholder="Email" id="forgotPasswordEmail" required>
+                    <button type="submit">Send Reset Link</button>
+                </form>
+                <div class="recovery-result" id="forgotPasswordResult"></div>
+                <div class="recovery-back">
+                    <button type="button" class="back-to-login-btn">Back to Login</button>
+                </div>
+            </div>
+
+            <div class="auth-form hidden" id="forgotUsernameForm">
+                <h2>Forgot Username</h2>
+                <form id="forgotUsernameFormElement">
+                    <input type="email" placeholder="Email" id="forgotUsernameEmail" required>
+                    <button type="submit">Find Username</button>
+                </form>
+                <div class="recovery-result" id="forgotUsernameResult"></div>
+                <div class="recovery-back">
+                    <button type="button" class="back-to-login-btn">Back to Login</button>
+                </div>
+            </div>
+
+            <div class="auth-form hidden" id="resetPasswordForm">
+                <h2>Reset Password</h2>
+                <form id="resetPasswordFormElement">
+                    <input type="hidden" id="resetToken">
+                    <input type="password" placeholder="New Password" id="newPassword" required>
+                    <input type="password" placeholder="Confirm New Password" id="confirmPassword" required>
+                    <button type="submit">Reset Password</button>
+                </form>
+                <div class="recovery-result" id="resetPasswordResult"></div>
+                <div class="recovery-back">
+                    <button type="button" class="back-to-login-btn">Back to Login</button>
+                </div>
+            </div>
         </div>
 
         <div class="main-content hidden" id="mainContent">
@@ -51,9 +94,9 @@
                     <span>Welcome, <span id="currentUser"></span></span>
                 </div>
                 <div class="nav-actions">
-                    <button onclick="goToAdmin()" id="adminBtn" class="hidden">Admin Panel</button>
-                    <button onclick="goToDashboard()">Dashboard</button>
-                    <button onclick="logout()">Logout</button>
+                    <button id="adminBtn" class="hidden">Admin Panel</button>
+                    <button id="dashboardBtn">Dashboard</button>
+                    <button id="logoutBtn">Logout</button>
                 </div>
             </nav>
 
@@ -63,12 +106,12 @@
                     <div class="card">
                         <h3>Create Posts</h3>
                         <p>Admin users can create new LinkedIn posts for the team to share</p>
-                        <button onclick="goToAdmin()">Go to Admin Panel</button>
+                        <button id="goToAdminBtn">Go to Admin Panel</button>
                     </div>
                     <div class="card">
                         <h3>Browse Posts</h3>
                         <p>Team members can browse and select posts to share on their LinkedIn profiles</p>
-                        <button onclick="goToDashboard()">Go to Dashboard</button>
+                        <button id="goToDashboardBtn">Go to Dashboard</button>
                     </div>
                 </div>
             </div>

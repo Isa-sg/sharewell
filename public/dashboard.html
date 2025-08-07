@@ -5,318 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - LinkedIn Content Distributor</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Team Dashboard</h1>
-            <nav>
-                <button onclick="goHome()">Home</button>
-                <button onclick="goToAdmin()" id="adminBtn" class="hidden">Admin Panel</button>
-                <button onclick="logout()">Logout</button>
-            </nav>
+            <h1>Dashboard</h1>
+            <div class="nav-actions">
+                <button id="dashboardHomeBtn">Home</button>
+                <button id="dashboardLogoutBtn">Logout</button>
+            </div>
         </header>
 
-        <div class="main-content">
-            <!-- User Scoring Section -->
-            <div class="scoring-section">
-                <h2>🏆 Your Score</h2>
-                <div class="score-cards">
-                    <div class="score-card">
-                        <div class="score-number" id="userPoints">0</div>
-                        <div class="score-label">Total Points</div>
-                    </div>
-                    <div class="score-card">
-                        <div class="score-number" id="userRank">#1</div>
-                        <div class="score-label">Rank</div>
-                    </div>
-                    <div class="score-card">
-                        <div class="score-number" id="userStreak">0</div>
-                        <div class="score-label">Current Streak</div>
-                    </div>
-                    <div class="score-card">
-                        <div class="score-number" id="userPosts">0</div>
-                        <div class="score-label">Posts</div>
-                    </div>
+        <div class="dashboard-content">
+            <div class="stats-section">
+                <div class="stat-card">
+                    <h3>Available Posts</h3>
+                    <span class="stat-number" id="totalPosts">-</span>
                 </div>
-                <button onclick="showAchievements()" class="achievements-btn">🏅 View Achievements</button>
-            </div>
-
-            <div class="quick-post-section">
-                <h2>✏️ Quick Post</h2>
-                <p>Create a custom post right here</p>
-                <form id="quickPostForm">
-                    <input type="text" placeholder="Post title..." id="quickTitle" required>
-                    <textarea placeholder="Write your LinkedIn post here..." id="quickContent" rows="4" required></textarea>
-                    <button type="submit">Create & Share</button>
-                </form>
-            </div>
-            
-            <div class="leaderboard-section">
-                <h2>🏅 Leaderboard</h2>
-                <div id="leaderboard" class="leaderboard-list">
-                    <div class="loading">Loading leaderboard...</div>
+                <div class="stat-card">
+                    <h3>Your Score</h3>
+                    <span class="stat-number" id="userScore">-</span>
                 </div>
-                <button onclick="showFullLeaderboard()" class="view-more-btn">View Full Leaderboard</button>
-            </div>
-
-            <!-- Search and Filter Section -->
-            <div class="search-filter-section">
-                <div class="search-controls">
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search posts by title or content...">
-                    <select id="filterStatus" class="filter-select">
-                        <option value="">All Posts</option>
-                        <option value="available">Available</option>
-                        <option value="posted">Posted</option>
-                    </select>
-                    <select id="filterAuthor" class="filter-select">
-                        <option value="">All Authors</option>
-                    </select>
-                    <button onclick="clearAllFilters()" class="clear-filters-btn">Clear Filters</button>
-                    <button onclick="toggleBulkMode()" class="clear-filters-btn" id="bulkModeBtn">Bulk Actions</button>
-                </div>
-                <div class="results-info" id="resultsInfo">Loading posts...</div>
-            </div>
-
-            <!-- Bulk Operations -->
-            <div class="bulk-operations" id="bulkOperations">
-                <div class="bulk-info">
-                    <span id="selectedCount">0</span> posts selected
-                </div>
-                <div class="bulk-actions">
-                    <button onclick="bulkMarkAsPosted()" class="bulk-btn">Mark as Posted</button>
-                    <button onclick="bulkDelete()" class="bulk-btn secondary">Delete</button>
-                    <button onclick="exportSelected()" class="bulk-btn">Export</button>
-                    <button onclick="exitBulkMode()" class="bulk-btn secondary">Cancel</button>
+                <div class="stat-card">
+                    <h3>Current Streak</h3>
+                    <span class="stat-number" id="userStreak">-</span>
                 </div>
             </div>
 
-            <!-- Scheduling Section -->
-            <div class="schedule-section" id="scheduleSection">
-                <h3>📅 Schedule Posts</h3>
-                <div class="schedule-form">
-                    <input type="datetime-local" id="scheduleDateTime" min="">
-                    <select id="schedulePostSelect">
-                        <option value="">Select a post to schedule...</option>
-                    </select>
-                    <button onclick="schedulePost()" class="schedule-btn">Schedule Post</button>
+            <div class="posts-section">
+                <div class="section-header">
+                    <h2>Available Posts</h2>
+                    <div class="filters">
+                        <input type="text" id="searchPosts" placeholder="Search posts...">
+                        <select id="sortPosts">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
                 </div>
                 
-                <div class="scheduled-posts" id="scheduledPosts">
-                    <h4>Scheduled Posts</h4>
-                    <div id="scheduledPostsList"></div>
+                <div class="posts-grid" id="postsGrid">
+                    <div class="loading">Loading posts...</div>
                 </div>
-            </div>
-
-            <!-- Token Status -->
-            <div class="token-status" id="tokenStatus">
-                <div class="token-header">
-                    <div class="token-title">🔑 LinkedIn Token Status</div>
-                    <button onclick="refreshTokenInfo()" class="token-refresh-btn">
-                        <span class="spinner hidden" id="tokenSpinner"></span>
-                        Refresh
-                    </button>
-                </div>
-                <div class="token-info" id="tokenInfo">
-                    <div class="token-stat">
-                        <div class="token-stat-value" id="tokenStatus">Unknown</div>
-                        <div class="token-stat-label">Status</div>
-                    </div>
-                    <div class="token-stat">
-                        <div class="token-stat-value" id="tokenExpiry">-</div>
-                        <div class="token-stat-label">Expires</div>
-                    </div>
-                    <div class="token-stat">
-                        <div class="token-stat-value" id="tokenUsage">-</div>
-                        <div class="token-stat-label">API Usage</div>
-                    </div>
-                </div>
-                <div id="tokenWarning" class="token-warning hidden">
-                    ⚠️ Your LinkedIn token will expire soon. Please reconnect your account.
-                </div>
-                <div id="tokenError" class="token-error hidden">
-                    ❌ Your LinkedIn token has expired. Please reconnect your account.
-                </div>
-            </div>
-
-            <div class="dashboard-section">
-                <h2>📰 Available Posts</h2>
-                <p>Click on any post to copy it and share on LinkedIn</p>
-                <div id="dashboardPosts">
-                    <!-- Loading skeleton -->
-                    <div class="skeleton skeleton-post"></div>
-                    <div class="skeleton skeleton-post"></div>
-                    <div class="skeleton skeleton-post"></div>
+                
+                <div class="pagination" id="pagination">
+                    <!-- Pagination controls will be inserted here -->
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="postModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <div class="post-type-indicator" id="postTypeIndicator">📰 Original Post</div>
-            <h3 id="modalTitle"></h3>
-            <div id="modalContent"></div>
-            <div id="modalImage"></div>
-            
-            <!-- AI Personalization Section -->
-            <div class="personalization-section" id="personalizationSection">
-                <button onclick="personalizePost()" id="personalizeBtn" class="personalize-btn">
-                    ✨ Personalize Your Post
-                </button>
-                <div class="personalization-form hidden" id="personalizationForm">
-                    <label for="templateSelect">Choose a personalization style:</label>
-                    <select id="templateSelect">
-                        <option value="">Select a template...</option>
-                    </select>
-                    <div class="personalization-buttons">
-                        <button onclick="generatePersonalization()" id="generateBtn">Apply Template</button>
-                        <button onclick="cancelPersonalization()" class="cancel-btn">Cancel</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Personalized Content Area -->
-            <div class="personalized-content hidden" id="personalizedContent">
-                <h4>✨ Your Personalized Version:</h4>
-                <div class="editable-content">
-                    <textarea id="personalizedText" rows="8"></textarea>
-                    <div class="editing-controls">
-                        <button onclick="refinePost()" class="refine-btn">✏️ Ask AI to Refine</button>
-                        <button onclick="usePersonalized()" class="use-btn">Use This Version</button>
-                        <button onclick="backToOriginal()" class="back-btn">Back to Original</button>
-                        <button onclick="tryDifferentTemplate()" class="template-btn">🔄 Try Different Template</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Generation Section -->
-            <div class="ai-section" id="aiSection">
-                <button onclick="showAIForm()" id="aiBtn" class="ai-btn">
-                    🤖 Generate AI Version
-                </button>
-                <div class="ai-form hidden" id="aiForm">
-                    <label for="aiStyleSelect">Choose AI writing style:</label>
-                    <select id="aiStyleSelect">
-                        <option value="professional">Professional & Authoritative</option>
-                        <option value="casual">Casual & Conversational</option>
-                        <option value="excited">Enthusiastic & Energetic</option>
-                        <option value="technical">Technical & Detailed</option>
-                    </select>
-                    <div class="ai-buttons">
-                        <button onclick="generateAIPost(currentPost ? currentPost.content : '', document.getElementById('aiStyleSelect').value)" id="aiGenerateBtn">🤖 Generate AI Version</button>
-                        <button onclick="hideAIForm()" class="cancel-btn">Cancel</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Generated Content Area -->
-            <div class="ai-content hidden" id="aiGeneratedContent">
-                <h4>🤖 AI Generated Version (Style: <span id="aiStyleUsed"></span>):</h4>
-                <div class="ai-content-display">
-                    <p id="aiContentText"></p>
-                    <div class="ai-controls">
-                        <button onclick="useAIVersion()" class="use-btn">Use AI Version</button>
-                        <button onclick="copyAIContent()" class="copy-btn">Copy AI Content</button>
-                        <button onclick="hideAIForm(); document.getElementById('aiGeneratedContent').classList.add('hidden')" class="back-btn">Back to Original</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Custom AI Modification Section -->
-            <div class="custom-ai-section" id="customAISection">
-                <button onclick="showCustomAIForm()" id="customAIBtn" class="custom-ai-btn">
-                    🎯 Ask AI to Modify Post
-                </button>
-                <div class="custom-ai-form hidden" id="customAIForm">
-                    <label for="aiInstruction">Tell AI how to modify the post:</label>
-                    <textarea id="aiInstruction" placeholder="e.g., Make it more exciting, Add more technical details, Make it shorter, Add a call to action..." rows="3"></textarea>
-                    
-                    <div class="quick-suggestions">
-                        <span>Quick suggestions:</span>
-                        <button type="button" onclick="fillAIInstruction('Make it more exciting and energetic')" class="suggestion-btn">More Exciting</button>
-                        <button type="button" onclick="fillAIInstruction('Make it shorter and more concise')" class="suggestion-btn">Shorter</button>
-                        <button type="button" onclick="fillAIInstruction('Add more technical details')" class="suggestion-btn">More Technical</button>
-                        <button type="button" onclick="fillAIInstruction('Make it more professional')" class="suggestion-btn">More Professional</button>
-                        <button type="button" onclick="fillAIInstruction('Add a strong call to action')" class="suggestion-btn">Add CTA</button>
-                    </div>
-                    
-                    <div class="custom-ai-buttons">
-                        <button onclick="modifyWithCustomAI()" id="customAIModifyBtn">🎯 Modify Post</button>
-                        <button onclick="hideCustomAIForm()" class="cancel-btn">Cancel</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Custom AI Result Area -->
-            <div class="custom-ai-result hidden" id="customAIResult">
-                <h4>🎯 Custom AI Modified (Request: "<span id="customAIResultInstruction"></span>"):</h4>
-                <div class="custom-ai-display">
-                    <p id="customAIResultText"></p>
-                    <div class="custom-ai-controls">
-                        <button onclick="useCustomAIVersion()" class="use-btn">Use This Version</button>
-                        <button onclick="copyCustomAIContent()" class="copy-btn">Copy Content</button>
-                        <button onclick="showCustomAIForm()" class="modify-again-btn">Modify Again</button>
-                        <button onclick="document.getElementById('customAIResult').classList.add('hidden')" class="back-btn">Back</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <button onclick="copyToClipboard()">Copy Post Content</button>
-                <button onclick="markAsUsed()">Mark as Used</button>
-                <button onclick="markAsPosted()" id="markPostedBtn" class="mark-posted-btn">Mark as Posted</button>
-                <button onclick="postToLinkedIn()" id="linkedinPostBtn" class="linkedin-post-btn">Post to LinkedIn</button>
-                <a href="#" id="linkedinLink" target="_blank">
-                    <button>Open LinkedIn</button>
-                </a>
-            </div>
-            
-            <div class="linkedin-status" id="linkedinStatus">
-                <p id="linkedinStatusText">Checking LinkedIn connection...</p>
-                <button onclick="connectLinkedIn()" id="connectLinkedInBtn" class="hidden">Connect LinkedIn</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Achievements Modal -->
-    <div id="achievementsModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="closeAchievementsModal()">&times;</span>
-            <h3>🏅 Your Achievements</h3>
-            <div id="achievementsList" class="achievements-list">
-                <div class="loading">Loading achievements...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Full Leaderboard Modal -->
-    <div id="leaderboardModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="closeLeaderboardModal()">&times;</span>
-            <h3>🏆 Full Leaderboard</h3>
-            <div id="fullLeaderboard" class="full-leaderboard">
-                <div class="loading">Loading leaderboard...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Point Notification -->
-    <div id="pointNotification" class="point-notification hidden">
-        <div class="notification-content">
-            <h4>🎉 Points Earned!</h4>
-            <p id="pointsEarned">+10 points</p>
-            <div id="pointsBreakdown"></div>
-            <div id="newAchievements" class="new-achievements"></div>
-        </div>
-    </div>
-
-    <!-- Real-time Status Indicator -->
-    <div id="realTimeIndicator" class="real-time-indicator">
-        ⚡ Live
-    </div>
-
+    <script src="script.js"></script>
     <script src="dashboard.js"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 const { db } = require('../config/database');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 class User {
   // Create a new user
@@ -24,6 +25,20 @@ class User {
       db.get(
         'SELECT * FROM users WHERE username = ?',
         [username],
+        (err, user) => {
+          if (err) reject(err);
+          else resolve(user);
+        }
+      );
+    });
+  }
+
+  // Find user by email
+  static async findByEmail(email) {
+    return new Promise((resolve, reject) => {
+      db.get(
+        'SELECT * FROM users WHERE email = ?',
+        [email],
         (err, user) => {
           if (err) reject(err);
           else resolve(user);
@@ -145,6 +160,123 @@ class User {
               }
             );
           }
+        }
+      );
+    });
+  }
+
+  // Create password reset token
+  static async createPasswordResetToken(email) {
+    const user = await this.findByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 60 minutes
+
+    return new Promise((resolve, reject) => {
+      db.run(
+        'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+        [user.id, token, expiresAt],
+        function(err) {
+          if (err) reject(err);
+          else resolve({ token, email: user.email, username: user.username });
+        }
+      );
+    });
+  }
+
+  // Verify reset token
+  static async verifyResetToken(token) {
+    return new Promise((resolve, reject) => {
+      db.get(
+        `SELECT prt.*, u.id as user_id, u.email, u.username 
+         FROM password_reset_tokens prt
+         JOIN users u ON prt.user_id = u.id
+         WHERE prt.token = ? AND prt.used = 0 AND datetime(prt.expires_at) > datetime('now')`,
+        [token],
+        (err, result) => {
+          if (err) reject(err);
+          else resolve(result);
+        }
+      );
+    });
+  }
+
+  // Reset password using token
+  static async resetPassword(token, newPassword) {
+    const tokenData = await this.verifyResetToken(token);
+    if (!tokenData) {
+      throw new Error('Invalid or expired token');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    return new Promise((resolve, reject) => {
+      db.serialize(() => {
+        // Update password
+        db.run(
+          'UPDATE users SET password = ? WHERE id = ?',
+          [hashedPassword, tokenData.user_id],
+          function(err) {
+            if (err) {
+              reject(err);
+              return;
+            }
+            
+            // Mark token as used
+            db.run(
+              'UPDATE password_reset_tokens SET used = 1 WHERE token = ?',
+              [token],
+              function(err) {
+                if (err) reject(err);
+                else resolve({ success: true, username: tokenData.username });
+              }
+            );
+          }
+        );
+      });
+    });
+  }
+
+  // Update password for authenticated user
+  static async updatePassword(userId, newPassword) {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    return new Promise((resolve, reject) => {
+      db.run(
+        'UPDATE users SET password = ? WHERE id = ?',
+        [hashedPassword, userId],
+        function(err) {
+          if (err) reject(err);
+          else resolve({ success: true });
+        }
+      );
+    });
+  }
+
+  // Get all users for admin panel
+  static async getAllUsers() {
+    return new Promise((resolve, reject) => {
+      db.all(
+        `SELECT 
+          u.id, 
+          u.username, 
+          u.email, 
+          u.role,
+          u.created_at,
+          us.total_points,
+          us.current_streak,
+          COUNT(pu.id) as total_posts
+        FROM users u
+        LEFT JOIN user_scores us ON u.id = us.user_id
+        LEFT JOIN post_usage pu ON u.id = pu.user_id
+        GROUP BY u.id
+        ORDER BY u.created_at DESC`,
+        (err, users) => {
+          if (err) reject(err);
+          else resolve(users || []);
         }
       );
     });

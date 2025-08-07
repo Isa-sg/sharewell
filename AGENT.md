@@ -39,11 +39,24 @@ src/
 ## Commands
 
 ### Development
-- **Start server**: `node server.js`
+- **Start server**: `npm start` (production-ready version)
+- **Start development server**: `npm run dev` (with nodemon)
+- **Start legacy server**: `npm run start:old` (original version)
 - **Install dependencies**: `npm install`
 
+### Database Management
+- **Run migrations**: `npm run migrate`
+- **Create backup**: `npm run backup`
+- **Test infrastructure**: `node test-final.js`
+
+### Docker
+- **Build image**: `npm run docker:build`
+- **Development with Docker**: `npm run docker:dev`
+- **Production with Docker**: `npm run docker:prod`
+
 ### Testing
-- **Test server startup**: `node -e "require('./server.js'); setTimeout(() => process.exit(0), 2000);"`
+- **Test infrastructure**: `REDIS_ENABLED=false node test-final.js`
+- **Check server startup**: `REDIS_ENABLED=false node -c server_new.js`
 
 ## Key Features
 
@@ -53,10 +66,10 @@ src/
    - Session management
 
 2. **Posts Management**
-   - Create, read, delete posts
+   - Create, read, delete posts with pagination
    - LinkedIn posting integration
    - Post personalization templates
-   - AI-powered post generation and modification
+   - AI-powered post generation and modification (async with job queues)
 
 3. **Scoring System**
    - Points for posting activity
@@ -73,6 +86,18 @@ src/
    - Claude API for post generation
    - Multiple writing styles
    - Post modification capabilities
+   - Async job processing
+
+6. **Infrastructure Features** 
+   - Database connection pooling
+   - Migration system with rollback support
+   - Automatic backup system
+   - Background job queues (Bull/Redis)
+   - Structured logging (Winston)
+   - Health check endpoints
+   - OpenAPI/Swagger documentation
+   - Docker support with dev/prod configs
+   - Graceful Redis fallback
 
 ## Environment Variables Required
 

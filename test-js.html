@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test JS Functions</title>
+    <style>
+        .hidden { display: none; }
+        .tab-btn { margin: 5px; padding: 10px; }
+        .tab-btn.active { background: orange; }
+    </style>
+</head>
+<body>
+    <div class="auth-tabs">
+        <button class="tab-btn active" onclick="showLogin()">Login</button>
+        <button class="tab-btn" onclick="showRegister()">Register</button>
+        <button class="tab-btn" onclick="showForgotPassword()">Forgot Password</button>
+        <button class="tab-btn" onclick="showForgotUsername()">Forgot Username</button>
+    </div>
+
+    <div class="auth-form" id="loginForm">
+        <h2>Login Form</h2>
+    </div>
+    <div class="auth-form hidden" id="registerForm">
+        <h2>Register Form</h2>
+    </div>
+    <div class="auth-form hidden" id="forgotPasswordForm">
+        <h2>Forgot Password Form</h2>
+    </div>
+    <div class="auth-form hidden" id="forgotUsernameForm">
+        <h2>Forgot Username Form</h2>
+    </div>
+
+    <script>
+        console.log('Testing JavaScript functions...');
+        
+        // Test if elements exist
+        console.log('loginForm:', document.getElementById('loginForm'));
+        console.log('forgotPasswordForm:', document.getElementById('forgotPasswordForm'));
+        console.log('forgotUsernameForm:', document.getElementById('forgotUsernameForm'));
+
+        // Define the functions inline for testing
+        function hideAllForms() {
+            console.log('hideAllForms called');
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('forgotPasswordForm').classList.add('hidden');
+            document.getElementById('forgotUsernameForm').classList.add('hidden');
+        }
+
+        function showLogin() {
+            console.log('showLogin called');
+            hideAllForms();
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        }
+
+        function showRegister() {
+            console.log('showRegister called');
+            hideAllForms();
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        }
+
+        function showForgotPassword() {
+            console.log('showForgotPassword called');
+            hideAllForms();
+            document.getElementById('forgotPasswordForm').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        }
+
+        function showForgotUsername() {
+            console.log('showForgotUsername called');
+            hideAllForms();
+            document.getElementById('forgotUsernameForm').classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-btn')[3].classList.add('active');
+        }
+
+        // Test function calls
+        setTimeout(() => {
+            console.log('Testing showForgotPassword...');
+            showForgotPassword();
+        }, 1000);
+    </script>
+</body>
+</html>

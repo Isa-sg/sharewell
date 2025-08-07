@@ -1,6 +1,15 @@
 const express = require('express');
 const passport = require('passport');
-const { register, login, logout, linkedinCallback } = require('../controllers/authController');
+const { 
+  register, 
+  login, 
+  logout, 
+  linkedinCallback, 
+  requestPasswordReset, 
+  resetPassword, 
+  verifyResetToken,
+  forgotUsername 
+} = require('../controllers/authController');
 const User = require('../models/User');
 
 const router = express.Router();
@@ -40,5 +49,36 @@ router.get('/linkedin/status', async (req, res) => {
 router.post('/register', register);
 router.post('/login', login);
 router.post('/logout', logout);
+
+// Auth status check
+router.get('/status', async (req, res) => {
+  if (req.session.userId) {
+    try {
+      const user = await User.findById(req.session.userId);
+      if (user) {
+        res.json({ 
+          authenticated: true, 
+          user: { 
+            id: user.id, 
+            username: user.username, 
+            email: user.email,
+            role: user.role 
+          } 
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking user status:', error);
+    }
+  }
+  
+  res.json({ authenticated: false });
+});
+
+// Password Recovery Routes
+router.post('/forgot-password', requestPasswordReset);
+router.post('/reset-password', resetPassword);
+router.get('/verify-reset-token/:token', verifyResetToken);
+router.post('/forgot-username', forgotUsername);
 
 module.exports = router;

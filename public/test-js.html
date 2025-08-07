@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Test</title>
+</head>
+<body>
+    <h1>JavaScript Function Test</h1>
+    
+    <button onclick="testGoToDashboard()">Test Dashboard</button>
+    <button onclick="testGoToAdmin()">Test Admin</button>
+    <button onclick="testLogout()">Test Logout</button>
+    
+    <div id="output"></div>
+    
+    <script src="script.js"></script>
+    <script>
+        function testGoToDashboard() {
+            console.log('Testing goToDashboard function');
+            try {
+                if (typeof window.goToDashboard === 'function') {
+                    document.getElementById('output').innerHTML += '<p>goToDashboard function exists</p>';
+                    window.goToDashboard();
+                } else {
+                    document.getElementById('output').innerHTML += '<p>goToDashboard function NOT found</p>';
+                }
+            } catch (error) {
+                document.getElementById('output').innerHTML += '<p>Error: ' + error.message + '</p>';
+            }
+        }
+        
+        function testGoToAdmin() {
+            console.log('Testing goToAdmin function');
+            try {
+                if (typeof window.goToAdmin === 'function') {
+                    document.getElementById('output').innerHTML += '<p>goToAdmin function exists</p>';
+                    window.goToAdmin();
+                } else {
+                    document.getElementById('output').innerHTML += '<p>goToAdmin function NOT found</p>';
+                }
+            } catch (error) {
+                document.getElementById('output').innerHTML += '<p>Error: ' + error.message + '</p>';
+            }
+        }
+        
+        function testLogout() {
+            console.log('Testing logout function');
+            try {
+                if (typeof window.logout === 'function') {
+                    document.getElementById('output').innerHTML += '<p>logout function exists</p>';
+                    window.logout();
+                } else {
+                    document.getElementById('output').innerHTML += '<p>logout function NOT found</p>';
+                }
+            } catch (error) {
+                document.getElementById('output').innerHTML += '<p>Error: ' + error.message + '</p>';
+            }
+        }
+        
+        // Check if functions are loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            console.log('goToDashboard exists:', typeof window.goToDashboard);
+            console.log('goToAdmin exists:', typeof window.goToAdmin);
+            console.log('logout exists:', typeof window.logout);
+        });
+    </script>
+</body>
+</html>

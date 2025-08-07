@@ -6,8 +6,9 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #fef7f0;
-    color: #292524;
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 50%, #f77737 100%);
+    background-attachment: fixed;
+    color: #2d1b14;
     line-height: 1.6;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -21,11 +22,15 @@ body {
 }
 
 header {
-    background: transparent;
-    color: #292524;
+    background: rgba(255, 107, 53, 0.15);
+    backdrop-filter: blur(15px);
+    color: white;
     padding: 40px 0;
     margin-bottom: 40px;
     text-align: center;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px 0 rgba(247, 119, 55, 0.3);
+    border: 1px solid rgba(255, 140, 66, 0.2);
 }
 
 header h1 {
@@ -33,15 +38,60 @@ header h1 {
     font-size: 3rem;
     font-weight: normal;
     margin-bottom: 8px;
-    color: #292524;
+    color: white;
 }
 
 header p {
     font-family: Georgia, Times, 'Times New Roman', serif;
     font-size: 1.1rem;
     font-style: italic;
-    color: #78716c;
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: 0;
+}
+
+/* Recovery form styles */
+.recovery-result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.success-message {
+    background-color: rgba(76, 175, 80, 0.1);
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    color: #2e7d32;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.error-message {
+    background-color: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    color: #c62828;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.recovery-back {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.recovery-back button {
+    background: none;
+    border: 1px solid rgba(255, 140, 66, 0.5);
+    color: #ff8c42;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.recovery-back button:hover {
+    background-color: rgba(255, 140, 66, 0.1);
+    border-color: #ff8c42;
 }
 
 header nav {
@@ -49,9 +99,9 @@ header nav {
 }
 
 header nav button {
-    background: transparent;
-    color: #292524;
-    border: 1px solid #e7e5e4;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 8px 16px;
     margin: 0 8px;
     border-radius: 8px;
@@ -59,22 +109,26 @@ header nav button {
     transition: all 0.2s ease;
     font-size: 14px;
     font-weight: normal;
+    backdrop-filter: blur(10px);
 }
 
 header nav button:hover {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #f77737 100%);
     color: white;
-    border-color: #ea580c;
+    border-color: #ff6b35;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
 }
 
 .auth-section {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
     padding: 40px;
     border-radius: 16px;
-    border: 1px solid #f5f5f4;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     max-width: 500px;
     margin: 0 auto;
-    box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
 .auth-tabs {
@@ -97,8 +151,9 @@ header nav button:hover {
 }
 
 .tab-btn.active {
-    color: #ea580c;
-    border-bottom-color: #ea580c;
+    color: #ff6b35;
+    border-bottom-color: #ff6b35;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(247, 119, 55, 0.1) 100%);
 }
 
 .auth-form {
@@ -124,14 +179,14 @@ header nav button:hover {
 
 .auth-form input:focus {
     outline: none;
-    border-color: #ea580c;
-    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
 }
 
 .auth-form button {
     width: 100%;
     padding: 12px 16px;
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -139,19 +194,22 @@ header nav button:hover {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
 }
 
 .auth-form button:hover {
-    background: #c2410c;
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #f77737 0%, #d64933 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
 }
 
 .main-content {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
     padding: 40px;
     border-radius: 16px;
-    border: 1px solid #f5f5f4;
-    box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 }
 
 nav {
@@ -170,7 +228,7 @@ nav {
 }
 
 .nav-actions button {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     padding: 8px 16px;
@@ -180,11 +238,13 @@ nav {
     transition: all 0.2s ease;
     font-size: 14px;
     font-weight: 500;
+    box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
 }
 
 .nav-actions button:hover {
-    background: #c2410c;
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, #f77737 0%, #d64933 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
 }
 
 .cards {
@@ -195,31 +255,33 @@ nav {
 }
 
 .card {
-    background: #fefcfb;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
     padding: 25px;
     border-radius: 16px;
     text-align: center;
-    border: 1px solid #f5f5f4;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     transition: all 0.2s ease;
 }
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 25px -3px rgba(234, 88, 12, 0.1);
+    box-shadow: 0 10px 25px -3px rgba(255, 107, 53, 0.3);
 }
 
 .card h3 {
-    color: #ea580c;
+    color: #ff6b35;
     margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(255, 107, 53, 0.1);
 }
 
 .card p {
     margin-bottom: 20px;
-    color: #78716c;
+    color: #8d5524;
 }
 
 .card button {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     padding: 12px 25px;
@@ -227,11 +289,13 @@ nav {
     cursor: pointer;
     transition: all 0.2s ease;
     font-weight: 500;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .card button:hover {
-    background: #c2410c;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #f77737 0%, #d64933 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(255, 107, 53, 0.4);
 }
 
 .create-post-section {
@@ -239,8 +303,9 @@ nav {
 }
 
 .create-post-section h2 {
-    color: #ea580c;
+    color: #ff6b35;
     margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(255, 107, 53, 0.1);
 }
 
 .create-post-section form {
@@ -258,7 +323,7 @@ nav {
 }
 
 .create-post-section button {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     padding: 15px;
@@ -266,24 +331,27 @@ nav {
     font-size: 14px;
     font-weight: normal;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
 }
 
 .create-post-section button:hover {
-    background: #c2410c;
+    background: linear-gradient(135deg, #f77737 0%, #d64933 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(255, 107, 53, 0.4);
 }
 
 .news-sync-section {
     margin-bottom: 40px;
     padding: 25px;
-    background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+    background: linear-gradient(135deg, #fff4e6 0%, #ffedd5 100%);
     border-radius: 16px;
-    border: 1px solid #fb923c;
-    box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.1);
+    border: 1px solid #ff8c42;
+    box-shadow: 0 4px 6px -1px rgba(255, 140, 66, 0.2);
 }
 
 .news-sync-section h2 {
-    color: #ea580c;
+    color: #c2410c;
     margin-bottom: 15px;
 }
 
@@ -299,7 +367,7 @@ nav {
 }
 
 .news-controls button {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     padding: 12px 25px;
@@ -307,11 +375,12 @@ nav {
     cursor: pointer;
     font-size: 14px;
     font-weight: normal;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 
 .news-controls button:hover {
-    background: #c2410c;
+    background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
+    transform: translateY(-1px);
 }
 
 .news-controls button:disabled {
@@ -321,11 +390,11 @@ nav {
 
 #newsStatus {
     font-weight: bold;
-    color: #ea580c;
+    color: #ff6b35;
 }
 
 .posts-section h2 {
-    color: #ea580c;
+    color: #ff6b35;
     margin-bottom: 20px;
 }
 
@@ -338,7 +407,7 @@ nav {
 }
 
 .post-item h3 {
-    color: #ea580c;
+    color: #ff6b35;
     margin-bottom: 10px;
 }
 
@@ -352,7 +421,7 @@ nav {
 }
 
 .post-item button {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     padding: 8px 16px;
@@ -360,11 +429,12 @@ nav {
     cursor: pointer;
     margin-top: 10px;
     font-weight: normal;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 
 .post-item button:hover {
-    background: #c2410c;
+    background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
+    transform: translateY(-1px);
 }
 
 .modal {
@@ -412,18 +482,19 @@ nav {
 }
 
 .modal-actions button {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     padding: 12px 20px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: normal;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 
 .modal-actions button:hover {
-    background: #c2410c;
+    background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
+    transform: translateY(-1px);
 }
 
 .hidden {
@@ -471,12 +542,12 @@ nav {
 .quick-post-section input:focus,
 .quick-post-section textarea:focus {
     outline: none;
-    border-color: #ea580c;
-    box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .quick-post-section button {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     padding: 12px 16px;
@@ -484,11 +555,12 @@ nav {
     font-size: 14px;
     font-weight: normal;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .quick-post-section button:hover {
-    background: #c2410c;
+    background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
+    transform: translateY(-1px);
 }
 
 .dashboard-section {
@@ -540,12 +612,29 @@ nav {
 .dashboard-post p {
     color: #6b7280;
     margin-bottom: 12px;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
     font-size: 14px;
     line-height: 1.5;
+}
+
+/* Override text truncation for dashboard post cards */
+.posts-grid .post-card .post-content,
+.posts-grid .post-card p,
+.post-card .post-content,
+.post-card p,
+.dashboard-post p,
+.posts-grid .dashboard-post p {
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
 }
 
 .dashboard-post small {
@@ -775,7 +864,7 @@ nav {
 
 .cancel-btn {
     background: #f0f0f0;
-    color: #78716c;
+    color: #8d5524;
 }
 
 .cancel-btn:hover {
@@ -843,7 +932,7 @@ nav {
 
 .back-btn {
     background: #f0f0f0;
-    color: #78716c;
+    color: #8d5524;
 }
 
 .back-btn:hover {
@@ -1025,12 +1114,12 @@ nav {
 }
 
 .ai-controls .copy-btn {
-    background: #3b82f6;
+    background: #ff6b35;
     color: white;
 }
 
 .ai-controls .copy-btn:hover {
-    background: #2563eb;
+    background: #ea580c;
 }
 
 .ai-controls .back-btn {
@@ -1198,12 +1287,12 @@ nav {
 }
 
 .custom-ai-controls .copy-btn {
-    background: #3b82f6;
+    background: #ff6b35;
     color: white;
 }
 
 .custom-ai-controls .copy-btn:hover {
-    background: #2563eb;
+    background: #ea580c;
 }
 
 .custom-ai-controls .modify-again-btn {
@@ -1228,7 +1317,7 @@ nav {
 
 /* Scoring Section */
 .scoring-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
     color: white;
     padding: 30px;
     border-radius: 12px;
@@ -1742,9 +1831,9 @@ nav {
 }
 
 .post-action-btn:hover {
-    background: #ea580c;
+    background: #ff6b35;
     color: white;
-    border-color: #ea580c;
+    border-color: #ff6b35;
 }
 
 /* Bulk Operations */
@@ -1775,18 +1864,19 @@ nav {
 }
 
 .bulk-btn {
-    background: #ea580c;
+    background: linear-gradient(135deg, #ff6b35 0%, #e55a2b 100%);
     color: white;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .bulk-btn:hover {
-    background: #c2410c;
+    background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%);
+    transform: translateY(-1px);
 }
 
 .bulk-btn.secondary {
@@ -1804,7 +1894,7 @@ nav {
     left: 12px;
     width: 18px;
     height: 18px;
-    accent-color: #ea580c;
+    accent-color: #ff6b35;
 }
 
 .dashboard-post.selectable {
@@ -1895,12 +1985,12 @@ nav {
 }
 
 .edit-schedule-btn {
-    background: #3b82f6;
+    background: #ff6b35;
     color: white;
 }
 
 .edit-schedule-btn:hover {
-    background: #2563eb;
+    background: #ea580c;
 }
 
 .cancel-schedule-btn {

@@ -1,4 +1,5 @@
 const { newsQueue, aiQueue, emailQueue } = require('../config/queue');
+const emailService = require('../services/emailService');
 const newsService = require('../services/newsService');
 const aiService = require('../services/aiService');
 
@@ -99,10 +100,8 @@ emailQueue.process('send-notification', async (job) => {
     job.progress(10);
     console.log(`Sending ${type} notification to ${to}`);
     
-    // Here you would integrate with your email service
-    // For now, we'll just log it
-    console.log(`Email notification: ${subject} to ${to}`);
-    console.log(`Body: ${body}`);
+    // Send email using the email service
+    const result = await emailService.sendEmail(to, subject, body);
     
     job.progress(100);
     
@@ -111,6 +110,8 @@ emailQueue.process('send-notification', async (job) => {
       recipient: to,
       type,
       sentAt: new Date(),
+      messageId: result.messageId,
+      preview: result.preview
     };
   } catch (error) {
     console.error('Email notification job failed:', error);

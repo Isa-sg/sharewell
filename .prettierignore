@@ -1,0 +1,11 @@
+node_modules/
+coverage/
+dist/
+build/
+logs/
+backups/
+*.log
+.env*
+linkedin_distributor*.db
+public/
+package-lock.json

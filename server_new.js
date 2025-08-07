@@ -122,6 +122,15 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
 
+// Frontend routes
+app.get('/dashboard', (req, res) => {
+  res.sendFile(__dirname + '/public/dashboard.html');
+});
+
+app.get('/admin', (req, res) => {
+  res.sendFile(__dirname + '/public/admin.html');
+});
+
 // API info endpoint
 app.get('/api', (req, res) => {
   res.json({
@@ -173,7 +182,7 @@ app.use((err, req, res, next) => {
 });
 
 // Graceful shutdown handling
-const gracefulShutdown = async (signal) => {
+let gracefulShutdown = async (signal) => {
   logger.info(`Received ${signal}, starting graceful shutdown`);
   
   try {
@@ -183,7 +192,9 @@ const gracefulShutdown = async (signal) => {
     
     // Close Redis connections
     const { redis } = require('./src/config/queue');
-    await redis.disconnect();
+    if (redis && redis.disconnect) {
+      await redis.disconnect();
+    }
     
     logger.info('Graceful shutdown completed');
     process.exit(0);

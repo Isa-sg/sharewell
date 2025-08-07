@@ -19,28 +19,28 @@ async function generateAIPost(rawText) {
       max_tokens: 400,
       messages: [{
         role: 'user',
-        content: `You are a social media expert. Transform this tech news into an engaging post that will get high engagement.
+        content: `You are a social media expert. Transform this tech news into a highly shareable post following these STRICT RULES:
 
-STRICT RULES TO FOLLOW:
+SHAREABILITY RULES:
 - NO hashtags whatsoever
-- NO emojis (unless truly exceptional case)
-- Create a hook that makes people think "that's interesting" 
+- NO emojis (if unsure about exceptional case, don't use them)
+- Post must be 210-220 characters long (COUNT CHARACTERS!)
+- Create a hook that makes people think "that's interesting" - you need this if you don't have 300k followers
 - Make it conversational and engaging
-- Ask thought-provoking questions
 - Remove any dates completely
-- Keep it professional but approachable
 - Focus on the value/impact to readers
-- Use line breaks for readability
-- Make people want to comment or share
+- Make people want to click, comment or share
 - DON'T include the source link in the main post
 
-Create the main post first. Then create a second follow-up post that says something like "Read the full details here: https://ampcode.com/news"
+FORMAT:
+Main post: 210-220 characters with a strong hook
+Second post: "Read the full thing here: https://ampcode.com/news"
 
 Tech News: ${rawText.substring(0, 600)}`
       }]
     }, {
       headers: {
-        'Authorization': `Bearer ${CLAUDE_API_KEY}`,
+        'x-api-key': CLAUDE_API_KEY,
         'Content-Type': 'application/json',
         'anthropic-version': '2023-06-01'
       }
@@ -94,7 +94,7 @@ function generateTrulyUniqueContent(cleanText, counter) {
     .replace(/\s+/g, ' ') // Clean up extra spaces
     .trim();
     
-  const trimmedContent = processedContent.substring(0, 180) + (processedContent.length > 180 ? '...' : '');
+  const trimmedContent = processedContent;
   
   // Engagement-focused personas following social media best practices
   // NO emojis, NO hashtags, focus on hooks and engagement
@@ -228,28 +228,30 @@ async function generateAIPostWithStyle(content, style = 'professional') {
     max_tokens: 500,
     messages: [{
       role: 'user',
-      content: `You are a social media expert. Create an engaging post that will get high engagement and shares.
+      content: `You are a social media expert. Create a highly shareable post following these STRICT RULES:
 
 Style: ${selectedStyle.tone}
 Instructions: ${selectedStyle.instructions}
 
-STRICT REQUIREMENTS:
+SHAREABILITY RULES:
 - NO hashtags whatsoever
-- NO emojis (unless truly exceptional case)
+- NO emojis (if unsure about exceptional case, don't use them)
+- Post must be 210-220 characters long (COUNT CHARACTERS!)
+- Create a hook that makes people think "that's interesting" - you need this if you don't have 300k followers
 - Remove any dates completely
 - DON'T include the source link in the main post
-- Use line breaks for readability
-- Create hooks that make people think "that's interesting"
 - Make it engaging and valuable to readers
-- Include a call-to-action or question to encourage engagement
+- Focus on making people want to click, comment or share
 
-Create the main post first. Then create a separate follow-up post that says something like "Read the full details here: https://ampcode.com/news"
+FORMAT:
+Main post: 210-220 characters with a strong hook
+Second post: "Read the full thing here: https://ampcode.com/news"
 
 Content: ${content}`
     }]
   }, {
     headers: {
-      'Authorization': `Bearer ${CLAUDE_API_KEY}`,
+      'x-api-key': CLAUDE_API_KEY,
       'Content-Type': 'application/json',
       'anthropic-version': '2023-06-01'
     }
@@ -260,44 +262,63 @@ Content: ${content}`
 
 // Modify post with AI
 async function modifyAIPost(currentContent, instruction) {
+  console.log('Claude API Key exists:', !!CLAUDE_API_KEY);
+  console.log('Claude API Key length:', CLAUDE_API_KEY ? CLAUDE_API_KEY.length : 0);
+  console.log('API Key starts with:', CLAUDE_API_KEY ? CLAUDE_API_KEY.substring(0, 15) + '...' : 'none');
+  
   if (!CLAUDE_API_KEY) {
     throw new Error('AI service not configured');
   }
 
-  const response = await axios.post('https://api.anthropic.com/v1/messages', {
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 500,
-    messages: [{
-      role: 'user',
-      content: `You are a social media expert. I have a post that I want you to modify based on my specific instruction.
+  console.log('Making API request to Claude...');
+  
+  try {
+    const response = await axios.post('https://api.anthropic.com/v1/messages', {
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: `You are a social media expert. Modify this post following these SHAREABILITY RULES:
 
-Current Post:
-${currentContent}
-
+Current Post: ${currentContent}
 Modification Request: ${instruction}
 
-STRICT REQUIREMENTS:
+SHAREABILITY RULES:
 - NO hashtags whatsoever
-- NO emojis (unless truly exceptional case)
+- NO emojis (if unsure about exceptional case, don't use them)
+- Post must be 210-220 characters long (COUNT CHARACTERS!)
+- Create a hook that makes people think "that's interesting" - you need this if you don't have 300k followers
 - Apply the requested modification thoughtfully
 - Keep it professional and engaging
-- Use line breaks for readability
-- Create hooks that make people think "that's interesting"
-- Keep the post engaging and valuable
+- Make people want to click, comment or share
+- Remove any dates completely
 - If the instruction is unclear, make your best interpretation
-- Structure with main post and follow-up link format
+
+FORMAT:
+Main post: 210-220 characters with a strong hook
+Second post: "Read the full thing here: https://ampcode.com/news"
 
 Please provide the modified post:`
-    }]
-  }, {
-    headers: {
-      'Authorization': `Bearer ${CLAUDE_API_KEY}`,
-      'Content-Type': 'application/json',
-      'anthropic-version': '2023-06-01'
-    }
-  });
+      }]
+    }, {
+      headers: {
+        'x-api-key': CLAUDE_API_KEY,
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01'
+      }
+    });
 
-  return response.data.content[0].text;
+    return response.data.content[0].text;
+    
+  } catch (error) {
+    console.error('Detailed Claude API error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
+    throw new Error(`Claude API error: ${error.response?.data?.error?.message || error.message}`);
+  }
 }
 
 module.exports = {

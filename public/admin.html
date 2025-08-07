@@ -5,178 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - LinkedIn Content Distributor</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Admin Panel</h1>
-            <nav>
-                <button onclick="goHome()">Home</button>
-                <button onclick="goToDashboard()">Dashboard</button>
-                <button onclick="logout()">Logout</button>
-            </nav>
+            <div class="nav-actions">
+                <button id="adminHomeBtn">Home</button>
+                <button id="adminDashboardBtn">Dashboard</button>
+                <button id="adminLogoutBtn">Logout</button>
+            </div>
         </header>
 
-        <div class="main-content">
-            <div class="create-post-section">
-                <h2>Create New Post</h2>
-                <form id="createPostForm">
-                    <input type="text" placeholder="Post Title" id="postTitle" required>
-                    <textarea placeholder="Post Content" id="postContent" rows="6" required></textarea>
-                    <input type="url" placeholder="Image URL (optional)" id="postImageUrl">
-                    <button type="submit">Create Post</button>
-                </form>
+        <div class="admin-content">
+            <div class="admin-tabs">
+                <button class="tab-btn active" data-tab="posts">Manage Posts</button>
+                <button class="tab-btn" data-tab="news">News Sync</button>
+                <button class="tab-btn" data-tab="stats">Statistics</button>
+                <button class="tab-btn" data-tab="users">Users</button>
             </div>
 
-            <div class="news-sync-section">
-                <h2>Amp News Sync</h2>
-                <p>Automatically import the latest news from Amp as posts.</p>
-                <div class="news-controls">
-                    <button onclick="syncNews()" id="syncNewsBtn">Sync Latest News</button>
-                    <span id="newsStatus">News posts: <span id="newsCount">Loading...</span></span>
+            <!-- Posts Management Tab -->
+            <div class="tab-content active" id="postsTab">
+                <div class="section-header">
+                    <h2>Manage Posts</h2>
+                    <button class="primary-btn" id="showCreatePostBtn">Create New Post</button>
                 </div>
-            </div>
 
-            <!-- System Health Monitoring -->
-            <div class="health-section">
-                <h2>🔧 System Health</h2>
-                <div class="health-grid">
-                    <div class="health-indicator">
-                        <div class="health-label">
-                            <span class="health-status healthy" id="dbHealth"></span>Database
+                <div class="create-post-form hidden" id="createPostForm">
+                    <h3>Create New Post</h3>
+                    <form id="createPostFormElement">
+                        <textarea id="postContent" placeholder="Enter post content..." rows="6" required></textarea>
+                        <div class="form-actions">
+                            <button type="submit">Create Post</button>
+                            <button type="button" id="hideCreatePostBtn">Cancel</button>
                         </div>
-                        <div class="health-value" id="dbStatus">Connected</div>
-                    </div>
-                    <div class="health-indicator">
-                        <div class="health-label">
-                            <span class="health-status healthy" id="apiHealth"></span>API
-                        </div>
-                        <div class="health-value" id="apiStatus">Healthy</div>
-                    </div>
-                    <div class="health-indicator">
-                        <div class="health-label">
-                            <span class="health-status warning" id="linkedinHealth"></span>LinkedIn
-                        </div>
-                        <div class="health-value" id="linkedinStatus">Limited</div>
-                    </div>
-                    <div class="health-indicator">
-                        <div class="health-label">
-                            <span class="health-status healthy" id="memoryHealth"></span>Memory
-                        </div>
-                        <div class="health-value" id="memoryUsage">-</div>
-                    </div>
+                    </form>
+                </div>
+
+                <div class="posts-list" id="adminPostsList">
+                    <div class="loading">Loading posts...</div>
                 </div>
             </div>
 
-            <!-- Enhanced Analytics Dashboard -->
-            <div class="analytics-grid">
-                <div class="analytics-card">
-                    <div class="analytics-header">
-                        <div class="analytics-title">User Activity</div>
-                        <div class="analytics-change positive" id="userGrowth">+12%</div>
-                    </div>
-                    <div class="analytics-value" id="activeUsers">0</div>
-                    <div class="analytics-chart" id="userChart">User activity chart</div>
+            <!-- News Sync Tab -->
+            <div class="tab-content" id="newsTab">
+                <div class="section-header">
+                    <h2>News Sync Management</h2>
+                    <button class="primary-btn" id="syncNewsBtn">Sync News Now</button>
                 </div>
-                
-                <div class="analytics-card">
-                    <div class="analytics-header">
-                        <div class="analytics-title">Post Engagement</div>
-                        <div class="analytics-change positive" id="engagementGrowth">+8%</div>
-                    </div>
-                    <div class="analytics-value" id="postsShared">0</div>
-                    <div class="analytics-chart" id="engagementChart">Engagement trends</div>
-                </div>
-                
-                <div class="analytics-card">
-                    <div class="analytics-header">
-                        <div class="analytics-title">API Requests</div>
-                        <div class="analytics-change negative" id="apiGrowth">-3%</div>
-                    </div>
-                    <div class="analytics-value" id="apiRequests">0</div>
-                    <div class="analytics-chart" id="apiChart">API usage pattern</div>
-                </div>
-                
-                <div class="analytics-card">
-                    <div class="analytics-header">
-                        <div class="analytics-title">Storage Usage</div>
-                        <div class="analytics-change positive" id="storageGrowth">+15%</div>
-                    </div>
-                    <div class="analytics-value" id="storageUsed">0</div>
-                    <div class="analytics-chart" id="storageChart">Storage trends</div>
+                <div class="news-status" id="newsStatus">
+                    <div class="loading">Loading news status...</div>
                 </div>
             </div>
 
-            <!-- Scoring Analytics Section -->
-            <div class="scoring-analytics-section">
-                <h2>🏆 Scoring Analytics</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalUsers">0</div>
-                        <div class="stat-label">Active Users</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalPoints">0</div>
-                        <div class="stat-label">Points Awarded</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalPosts">0</div>
-                        <div class="stat-label">Posts Shared</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalAchievements">0</div>
-                        <div class="stat-label">Achievements</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="activeToday">0</div>
-                        <div class="stat-label">Posted Today</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="activeWeek">0</div>
-                        <div class="stat-label">Posted This Week</div>
-                    </div>
+            <!-- Statistics Tab -->
+            <div class="tab-content" id="statsTab">
+                <div class="section-header">
+                    <h2>Platform Statistics</h2>
                 </div>
-                
-                <div class="admin-controls">
-                    <button onclick="showTopUsers()" class="analytics-btn">View Top Users</button>
-                    <button onclick="showPostingTrends()" class="analytics-btn">Posting Trends</button>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="loading">Loading statistics...</div>
                 </div>
             </div>
 
-            <div class="posts-section">
-                <h2>Existing Posts</h2>
-                <div id="postsList"></div>
+            <!-- Users Tab -->
+            <div class="tab-content" id="usersTab">
+                <div class="section-header">
+                    <h2>User Management</h2>
+                </div>
+                <div class="users-list" id="usersList">
+                    <div class="loading">Loading users...</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Top Users Modal -->
-    <div id="topUsersModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="closeTopUsersModal()">&times;</span>
-            <h3>🏆 Top Users</h3>
-            <div id="topUsersList" class="top-users-list">
-                <div class="loading">Loading top users...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Posting Trends Modal -->
-    <div id="trendsModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" onclick="closeTrendsModal()">&times;</span>
-            <h3>📈 Posting Trends (Last 30 Days)</h3>
-            <div id="trendsList" class="trends-list">
-                <div class="loading">Loading trends...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Real-time Status Indicator -->
-    <div id="realTimeIndicator" class="real-time-indicator">
-        ⚡ Live
-    </div>
-
+    <script src="script.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>
