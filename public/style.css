@@ -1777,7 +1777,9 @@ nav {
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
-    overflow: hidden;
+    overflow: visible; /* Allow full post content to show */
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .dashboard-post:hover {
