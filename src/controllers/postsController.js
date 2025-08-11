@@ -200,7 +200,22 @@ const updatePost = async (req, res) => {
       return res.status(404).json({ error: 'Post not found' });
     }
     
-    if (user.role !== 'admin' && post.created_by !== req.session.userId) {
+    // Allow edit if admin, owner, or system-generated news post
+    let canEdit = (user && user.role === 'admin') || (post.created_by === req.session.userId);
+
+    if (!canEdit) {
+      // Check if this post was created by the system news bot
+      try {
+        const systemUser = await User.findByUsername('amp_news_bot');
+        if (systemUser && post.created_by === systemUser.id) {
+          canEdit = true;
+        }
+      } catch (_) {
+        // ignore lookup error and fall through
+      }
+    }
+
+    if (!canEdit) {
       return res.status(403).json({ error: 'Not authorized to edit this post' });
     }
     
