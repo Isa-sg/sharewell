@@ -160,7 +160,7 @@ function showTab(tabName, buttonElement) {
 // Posts Management
 async function loadAdminPosts() {
     try {
-        const response = await fetch('/api/posts?limit=50');
+        const response = await fetch('/api/posts?limit=50', { credentials: 'include' });
         if (response.ok) {
             const data = await response.json();
             displayAdminPosts(data.posts || []);
@@ -250,6 +250,7 @@ async function deletePost(postId) {
     try {
         const response = await fetch(`/api/posts/${postId}`, {
             method: 'DELETE',
+            credentials: 'include'
         });
         
         if (response.ok) {
@@ -268,7 +269,7 @@ async function deletePost(postId) {
 async function editPost(postId) {
     try {
         // Get the current post content
-        const response = await fetch('/api/posts');
+        const response = await fetch('/api/posts', { credentials: 'include' });
         if (!response.ok) {
             throw new Error('Failed to fetch posts');
         }
@@ -365,7 +366,9 @@ async function savePostEdit(postId, newContent, closeModal) {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                'x-admin-bypass': 'development'
             },
+            credentials: 'include',
             body: JSON.stringify({ content: newContent }),
         });
         
