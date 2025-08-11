@@ -132,6 +132,9 @@
 .admin-post-content {
     flex: 1;
     margin-bottom: 10px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .admin-post-meta {
