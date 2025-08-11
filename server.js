@@ -305,7 +305,7 @@ function generateTrulyUniqueContent(cleanText, counter) {
     .replace(/\s+/g, ' ') // Clean up extra spaces
     .trim();
     
-  const trimmedContent = processedContent.substring(0, 180) + (processedContent.length > 180 ? '...' : '');
+  const trimmedContent = processedContent; // Do not truncate content
   
   // Completely different personas - each writes like a different person
   const personas = [
