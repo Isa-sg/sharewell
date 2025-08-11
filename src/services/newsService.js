@@ -1,6 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const { generateAIPost } = require('./aiService');
+const { generateUncutPost } = require('./aiService');
 
 // News scraping function  
 async function fetchAmpNews() {
@@ -28,7 +28,7 @@ async function fetchAmpNews() {
       const text = $element.text().trim();
       
       if (text.length > 50) { // Process items with sufficient content
-        const processedPost = await generateAIPost(text);
+        const processedPost = { title: 'Amp Update', content: generateUncutPost(text), source: 'Amp News (Uncut)' };
         if (processedPost) {
           articles.push(processedPost);
         }

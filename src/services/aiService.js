@@ -321,9 +321,67 @@ Please provide the modified post:`
   }
 }
 
+// Generate concise post (<=280 chars), no emojis, no hashtags
+function generateUncutPost(rawText) {
+  if (!rawText || typeof rawText !== 'string') return '';
+  // Remove dates and extra whitespace
+  let text = rawText
+    .replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},\s+\d{4}\b/gi, '')
+    .replace(/\d{4}-\d{2}-\d{2}/g, '')
+    .replace(/\d{1,2}\/\d{1,2}\/\d{4}/g, '')
+    .replace(/[\n\r]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Remove emojis and hashtags
+  text = text
+    .replace(/[#][\w-]+/g, '')
+    .replace(/[\p{Emoji}\p{Extended_Pictographic}]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Build a compact hook from the beginning of the text
+  const base = text.replace(/^[-–—\s]+/, '');
+  const maxLen = 280; // cap at 280 chars as requested
+  let post = base;
+
+  // Prefer ending at sentence or clause boundary under maxLen
+  if (post.length > maxLen) {
+    const slice = post.slice(0, maxLen);
+    // Try to cut at punctuation for a clean end
+    const lastBoundary = Math.max(
+      slice.lastIndexOf('. '),
+      slice.lastIndexOf('! '),
+      slice.lastIndexOf('? '),
+      slice.lastIndexOf('; '),
+      slice.lastIndexOf(': '),
+      slice.lastIndexOf(', ')
+    );
+    if (lastBoundary > 40) {
+      post = slice.slice(0, lastBoundary).trim();
+    } else {
+      post = slice.trim();
+    }
+  }
+
+  // Ensure no trailing punctuation clutter
+  post = post.replace(/[\s.,;:!-]+$/, '').trim();
+
+  // Add a subtle hook if too bare
+  if (post.length < 60 && base.length > 60) {
+    const remainder = base.slice(post.length + 1);
+    const add = remainder.split(/[,.;:!?]/)[0].trim();
+    const candidate = `${post} — ${add}`.slice(0, maxLen);
+    post = candidate.replace(/[\s.,;:!-]+$/, '').trim();
+  }
+
+  return post;
+}
+
 module.exports = {
   generateAIPost,
   createLinkedInPost,
   generateAIPostWithStyle,
-  modifyAIPost
+  modifyAIPost,
+  generateUncutPost
 };
